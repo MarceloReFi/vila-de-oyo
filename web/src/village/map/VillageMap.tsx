@@ -17,10 +17,10 @@ export interface VillageBuilding {
 // /sprites/vista-da-vila.png — Ferraria top-left, Palácio top-center,
 // Bosque right by the water, Mercado bottom-center. Re-tune if the art changes.
 const BUILDINGS: VillageBuilding[] = [
-  { id: "forge", name: "Ferraria de Ogum", sub: "Ogum · GitHub", left: "14%", top: "34%", color: "#ff8a4c", built: true },
-  { id: "palace", name: "Palácio do Alaafin", sub: "Xangô · Painel do Reino", left: "49%", top: "15%", color: "#ffe16d", built: false },
-  { id: "grove", name: "Bosque de Nanã", sub: "Nanã · Obsidian", left: "85%", top: "35%", color: "#c8a2c8", built: false },
-  { id: "market", name: "Mercado de Exu", sub: "Exu · Telegram", left: "51%", top: "68%", color: "#ff6b6b", built: false },
+  { id: "forge", name: "Ferraria de Ogum", sub: "Ogum · GitHub", left: "14%", top: "38%", color: "#ff8a4c", built: true },
+  { id: "palace", name: "Palácio do Alaafin", sub: "Xangô · Painel do Reino", left: "49%", top: "20%", color: "#ffe16d", built: false },
+  { id: "grove", name: "Bosque de Nanã", sub: "Nanã · Obsidian", left: "84%", top: "38%", color: "#c8a2c8", built: false },
+  { id: "market", name: "Mercado de Exu", sub: "Exu · Telegram", left: "50%", top: "72%", color: "#ff6b6b", built: false },
 ];
 
 export interface VillageMapProps {
@@ -63,7 +63,7 @@ export function VillageMap({ onEnterBuilding, onOpenKingdom }: VillageMapProps) 
         style={{
           position: "absolute",
           inset: 0,
-          backgroundImage: "url('/sprites/vista-da-vila.png')",
+          backgroundImage: "url('/sprites/vila-de-oyo-map.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}

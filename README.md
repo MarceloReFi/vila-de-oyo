@@ -36,9 +36,19 @@ só a personalização — não uma cópia do Hermes Agent em si.
      ```ts
      { path: "/vila-oyo", labelKey: "vila-oyo", label: "Vila de Oyó", icon: Globe },
      ```
-3. Rode `npm run build` dentro de `web/` — o Vite já publica em
+3. Em `web/src/App.tsx`, adicione a rota à mesma condicional que trata
+   `/docs` e `/chat` como full-height (procure por `isDocsRoute` /
+   `isChatRoute`): declare `isVilaOyoRoute` e inclua-o nos dois `cn(...)`
+   que aplicam `min-h-0 flex-1` / `flex flex-1 flex-col`. Sem isso o
+   container do conteúdo não estica e qualquer componente com
+   `height: "100%"` dentro da rota colapsa — foi assim que o mapa e o
+   Painel Kingdom ficaram sem fundo visível na primeira tentativa.
+4. Rode `npm run build` dentro de `web/` — o Vite já publica em
    `../hermes_cli/web_dist`, então o `hermes dashboard` serve a versão nova
    sem passo manual de cópia.
+
+Ver `HERMES_GUIDE.md` neste repo para o passo a passo completo e as
+armadilhas já identificadas.
 
 ## Status
 
