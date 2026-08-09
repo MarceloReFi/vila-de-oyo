@@ -1,0 +1,104 @@
+/*
+ * "Sacred Sovereignty" design system — scoped to the Vila de Oyó village UI
+ * (/vila-oyo route). Deliberately NOT merged into the app-wide @theme in
+ * src/index.css: these tokens/fonts are a distinct visual world and would
+ * repaint the rest of the dashboard if declared globally.
+ */
+
+@font-face {
+  font-family: "VO Space Mono";
+  src: url("/fonts/vila-oyo/SpaceMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "VO Space Mono";
+  src: url("/fonts/vila-oyo/SpaceMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "VO Fira Sans";
+  src: url("/fonts/vila-oyo/FiraSans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "VO Fira Sans";
+  src: url("/fonts/vila-oyo/FiraSans-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "VO Fira Sans";
+  src: url("/fonts/vila-oyo/FiraSans-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "VO JetBrains Mono";
+  src: url("/fonts/vila-oyo/JetBrainsMono-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "VO JetBrains Mono";
+  src: url("/fonts/vila-oyo/JetBrainsMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.vo-root {
+  --vo-surface: #131313;
+  --vo-surface-container: #20201f;
+  --vo-surface-container-high: #2a2a2a;
+  --vo-surface-container-highest: #353535;
+  --vo-on-surface: #e5e2e1;
+  --vo-on-surface-variant: #d6c2ba;
+  --vo-outline: #9f8d85;
+  --vo-outline-variant: #52443d;
+  --vo-primary: #fbb796;
+  --vo-on-primary: #4e250e;
+  --vo-primary-container: #c78a6b;
+  --vo-on-primary-container: #4e250d;
+  --vo-secondary: #fff9ef;
+  --vo-secondary-container: #ffdb3c;
+  --vo-secondary-fixed: #ffe16d;
+  --vo-tertiary: #ffb3b4;
+  --vo-tertiary-container: #ff636f;
+  --vo-on-tertiary-container: #680016;
+  --vo-error: #ffb4ab;
+
+  font-family: "VO Fira Sans", sans-serif;
+  color: var(--vo-on-surface);
+}
+
+.vo-font-display {
+  font-family: "VO Space Mono", monospace;
+}
+.vo-font-label {
+  font-family: "VO JetBrains Mono", monospace;
+}
+
+/* Dithered "hand-painted" texture for large flat surfaces (per DESIGN.md
+   "Elevation & Depth"). Cheap 1px dot grid instead of a noise bitmap. */
+.vo-dither {
+  background-image: radial-gradient(var(--vo-outline-variant) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+.vo-leather {
+  background-color: var(--vo-primary);
+  background-image:
+    linear-gradient(45deg, rgba(0, 0, 0, 0.06) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.06) 75%),
+    linear-gradient(45deg, rgba(0, 0, 0, 0.06) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.06) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}

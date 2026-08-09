@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { ChamferButton } from "../../ui/ChamferButton";
+import { ChamferPanel } from "../../ui/ChamferPanel";
+import { chamfer, vo, voFontDisplay, voFontLabel, voFontBody } from "../../ui/theme";
 
 interface ForgeAction {
   id: number;
@@ -78,20 +81,7 @@ export function ForgeCommandWindow() {
   const cancel = () => setConfirmed(false);
 
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "100%",
-        maxWidth: 800,
-        background: "#2a2a2a",
-        border: "4px solid #2a1f1a",
-        boxShadow: "inset 2px 2px 0 #fbb796, inset -2px -2px 0 #0e0e0e, 0 0 30px rgba(251,183,150,.3), 8px 8px 0 #000",
-        padding: 24,
-        display: "flex",
-        flexDirection: "column",
-        gap: 24,
-      }}
-    >
+    <ChamferPanel corner={14} shadow={8} style={{ width: "100%", maxWidth: 800, padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
       <style>{`
         @keyframes vila-typing { from { width: 0; } to { width: 100%; } }
         @keyframes vila-pulse-opacity { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
@@ -108,20 +98,20 @@ export function ForgeCommandWindow() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          borderBottom: "2px solid #52443d",
+          borderBottom: `2px solid ${vo.outlineVariant}`,
           paddingBottom: 16,
         }}
       >
         <div>
-          <h1 style={{ fontFamily: "'Space Mono',monospace", fontSize: 32, fontWeight: 700, letterSpacing: -0.5, color: "#fbb796", margin: 0 }}>
+          <h1 style={{ fontFamily: voFontDisplay, fontSize: 32, fontWeight: 700, letterSpacing: -0.5, color: vo.primary, margin: 0 }}>
             FERRARIA DE OGUM
           </h1>
           <div
             style={{
-              fontFamily: "'JetBrains Mono',monospace",
+              fontFamily: voFontLabel,
               fontSize: 12,
               fontWeight: 500,
-              color: "#ff636f",
+              color: vo.tertiaryContainer,
               textTransform: "uppercase",
               letterSpacing: 2,
               marginTop: 4,
@@ -145,8 +135,9 @@ export function ForgeCommandWindow() {
                 gap: 16,
                 padding: 16,
                 textAlign: "left",
-                border: `2px solid ${active ? "#ff636f" : "#52443d"}`,
-                background: active ? "rgba(255,99,111,0.12)" : "#20201f",
+                clipPath: chamfer(8),
+                border: `2px solid ${active ? vo.tertiaryContainer : vo.outlineVariant}`,
+                background: active ? "rgba(255,99,111,0.12)" : vo.surfaceContainer,
                 boxShadow: "inset 2px 2px 0 rgba(255,255,255,.1), inset -2px -2px 0 rgba(0,0,0,.5), 4px 4px 0 rgba(0,0,0,.8)",
                 cursor: "pointer",
               }}
@@ -155,8 +146,9 @@ export function ForgeCommandWindow() {
                 style={{
                   width: 64,
                   height: 64,
-                  background: "#353535",
-                  border: `2px solid ${active ? "#ff636f" : "#52443d"}`,
+                  clipPath: chamfer(6),
+                  background: vo.surfaceContainerHighest,
+                  border: `2px solid ${active ? vo.tertiaryContainer : vo.outlineVariant}`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -167,10 +159,10 @@ export function ForgeCommandWindow() {
                 <ForgeIcon kind={a.icon} />
               </div>
               <div>
-                <h3 style={{ fontFamily: "'Space Mono',monospace", fontSize: 18, fontWeight: 700, color: active ? "#ff636f" : "#e5e2e1", margin: 0 }}>
+                <h3 style={{ fontFamily: voFontDisplay, fontSize: 18, fontWeight: 700, color: active ? vo.tertiaryContainer : vo.onSurface, margin: 0 }}>
                   {a.title}
                 </h3>
-                <p style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 500, color: "#d6c2ba", margin: "4px 0 0" }}>
+                <p style={{ fontFamily: voFontLabel, fontSize: 12, fontWeight: 500, color: vo.onSurfaceVariant, margin: "4px 0 0" }}>
                   {a.subtitle}
                 </p>
               </div>
@@ -182,26 +174,23 @@ export function ForgeCommandWindow() {
       <div
         style={{
           marginTop: 4,
-          background: "#0e0e0e",
-          border: "4px solid #52443d",
+          clipPath: chamfer(8),
+          background: vo.surface,
+          border: `4px solid ${vo.outlineVariant}`,
           padding: 16,
           position: "relative",
           boxShadow: "inset 0 0 10px rgba(0,0,0,.8)",
         }}
       >
-        <div style={{ position: "absolute", top: -4, left: -4, width: 8, height: 8, background: "#fbb796" }} />
-        <div style={{ position: "absolute", top: -4, right: -4, width: 8, height: 8, background: "#fbb796" }} />
-        <div style={{ position: "absolute", bottom: -4, left: -4, width: 8, height: 8, background: "#fbb796" }} />
-        <div style={{ position: "absolute", bottom: -4, right: -4, width: 8, height: 8, background: "#fbb796" }} />
         <p
           key={`${action.id}-${confirmed}`}
           style={{
             overflow: "hidden",
             whiteSpace: "nowrap",
             animation: "vila-typing 1.6s steps(40,end)",
-            fontFamily: "'Fira Sans',sans-serif",
+            fontFamily: voFontBody,
             fontSize: 18,
-            color: "#ffe16d",
+            color: vo.secondaryFixed,
             margin: 0,
           }}
         >
@@ -214,7 +203,7 @@ export function ForgeCommandWindow() {
             right: 10,
             width: 10,
             height: 10,
-            background: "#ffe16d",
+            background: vo.secondaryFixed,
             borderRadius: "50%",
             animation: "vila-pulse-opacity 1.2s infinite",
           }}
@@ -233,41 +222,13 @@ export function ForgeCommandWindow() {
       )}
 
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 16 }}>
-        <button
-          onClick={cancel}
-          style={{
-            background: "#353535",
-            color: "#e5e2e1",
-            border: "2px solid #52443d",
-            padding: "10px 24px",
-            fontFamily: "'Space Mono',monospace",
-            fontSize: 13,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            cursor: "pointer",
-            boxShadow: "4px 4px 0 rgba(0,0,0,.8)",
-          }}
-        >
+        <ChamferButton variant="secondary" corner={6} onClick={cancel} style={{ fontSize: 13, padding: "10px 24px" }}>
           Cancelar
-        </button>
-        <button
-          onClick={confirm}
-          style={{
-            background: "#c78a6b",
-            color: "#4e250d",
-            border: "2px solid #fbb796",
-            padding: "10px 24px",
-            fontFamily: "'Space Mono',monospace",
-            fontSize: 13,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            cursor: "pointer",
-            boxShadow: "4px 4px 0 rgba(0,0,0,.8)",
-          }}
-        >
+        </ChamferButton>
+        <ChamferButton variant="primary" corner={6} onClick={confirm} style={{ fontSize: 13, padding: "10px 24px" }}>
           Confirmar
-        </button>
+        </ChamferButton>
       </div>
-    </div>
+    </ChamferPanel>
   );
 }

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { ChamferButton } from "../ui/ChamferButton";
+import { chamfer, vo, voFontDisplay, voFontLabel, voFontBody } from "../ui/theme";
 
 export interface VillageGateProps {
   onEnter: () => void;
@@ -8,8 +10,29 @@ export function VillageGate({ onEnter }: VillageGateProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  const inputStyle = {
+    width: "100%",
+    padding: 14,
+    fontFamily: voFontBody,
+    fontSize: 16,
+    background: vo.secondary,
+    color: vo.onPrimary,
+    border: "2px solid #0e0e0e",
+    clipPath: chamfer(4),
+    boxShadow: "inset 4px 4px 0 rgba(0,0,0,.25)",
+  } as const;
+
+  const labelStyle = {
+    fontFamily: voFontLabel,
+    fontSize: 12,
+    fontWeight: 500,
+    color: vo.onSurfaceVariant,
+    textTransform: "uppercase" as const,
+    letterSpacing: 2,
+  };
+
   return (
-    <div style={{ position: "absolute", inset: 0 }}>
+    <div className="vo-root" style={{ position: "absolute", inset: 0 }}>
       <style>{`@keyframes vila-gate-flicker {0%{opacity:1;transform:scale(1);}25%{opacity:.8;transform:scale(1.05);}50%{opacity:.9;transform:scale(.95);}75%{opacity:.7;transform:scale(1.02);}100%{opacity:1;transform:scale(1);}}`}</style>
 
       <div
@@ -23,6 +46,7 @@ export function VillageGate({ onEnter }: VillageGateProps) {
           opacity: 0.6,
         }}
       />
+      <div className="vo-dither" style={{ position: "absolute", inset: 0, opacity: 0.5, mixBlendMode: "overlay" }} />
       <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.45)" }} />
       <div
         style={{
@@ -70,6 +94,7 @@ export function VillageGate({ onEnter }: VillageGateProps) {
             style={{
               position: "absolute",
               inset: 0,
+              clipPath: chamfer(10),
               background: "#855237",
               transform: "skewX(-6deg) scale(1.1)",
               boxShadow: "8px 8px 0 #000",
@@ -79,11 +104,11 @@ export function VillageGate({ onEnter }: VillageGateProps) {
           />
           <h1
             style={{
-              fontFamily: "'Space Mono',monospace",
+              fontFamily: voFontDisplay,
               fontSize: 48,
               fontWeight: 700,
               letterSpacing: -1,
-              color: "#ffe16d",
+              color: vo.secondaryFixed,
               textTransform: "uppercase",
               textShadow: "4px 4px 0 #000",
               position: "relative",
@@ -101,10 +126,10 @@ export function VillageGate({ onEnter }: VillageGateProps) {
             width: "100%",
             maxWidth: 420,
             padding: 32,
-            borderRadius: 8,
-            background: "#2a2a2a",
-            borderTop: "2px solid #9f8d85",
-            borderLeft: "2px solid #9f8d85",
+            clipPath: chamfer(12),
+            background: vo.surfaceContainerHigh,
+            borderTop: `2px solid ${vo.outline}`,
+            borderLeft: `2px solid ${vo.outline}`,
             borderBottom: "2px solid #0e0e0e",
             borderRight: "2px solid #0e0e0e",
             boxShadow: "inset 0 0 16px rgba(0,0,0,.8), 8px 8px 0 #000",
@@ -114,98 +139,38 @@ export function VillageGate({ onEnter }: VillageGateProps) {
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <label
-              style={{
-                fontFamily: "'JetBrains Mono',monospace",
-                fontSize: 12,
-                fontWeight: 500,
-                color: "#d6c2ba",
-                textTransform: "uppercase",
-                letterSpacing: 2,
-              }}
-            >
-              Nome de Usuário
-            </label>
+            <label style={labelStyle}>Nome de Usuário</label>
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Digite seu nome"
-              style={{
-                width: "100%",
-                padding: 14,
-                fontFamily: "'Fira Sans',sans-serif",
-                fontSize: 16,
-                background: "#fff9ef",
-                color: "#4e250e",
-                border: "2px solid #0e0e0e",
-                boxShadow: "inset 4px 4px 0 rgba(0,0,0,.25)",
-                borderRadius: 2,
-              }}
+              style={inputStyle}
             />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <label
-              style={{
-                fontFamily: "'JetBrains Mono',monospace",
-                fontSize: 12,
-                fontWeight: 500,
-                color: "#d6c2ba",
-                textTransform: "uppercase",
-                letterSpacing: 2,
-              }}
-            >
-              Senha Secreta
-            </label>
+            <label style={labelStyle}>Senha Secreta</label>
             <input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               placeholder="••••••••"
-              style={{
-                width: "100%",
-                padding: 14,
-                fontFamily: "'Fira Sans',sans-serif",
-                fontSize: 16,
-                background: "#fff9ef",
-                color: "#4e250e",
-                border: "2px solid #0e0e0e",
-                boxShadow: "inset 4px 4px 0 rgba(0,0,0,.25)",
-                borderRadius: 2,
-              }}
+              style={inputStyle}
             />
           </div>
 
-          <button
-            onClick={onEnter}
-            style={{
-              width: "100%",
-              padding: 16,
-              marginTop: 4,
-              background: "#c78a6b",
-              color: "#4e250d",
-              borderTop: "2px solid #ffdbcb",
-              borderLeft: "2px solid #ffdbcb",
-              borderBottom: "4px solid #693b22",
-              borderRight: "4px solid #693b22",
-              fontFamily: "'Space Mono',monospace",
-              fontSize: 18,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              cursor: "pointer",
-            }}
-          >
+          <ChamferButton onClick={onEnter} corner={10} style={{ width: "100%", fontSize: 18, padding: 16, marginTop: 4 }}>
             Entrar
-          </button>
+          </ChamferButton>
 
           <div style={{ textAlign: "center", marginTop: 2 }}>
             <a
               href="#"
               style={{
-                fontFamily: "'JetBrains Mono',monospace",
+                fontFamily: voFontLabel,
                 fontSize: 12,
                 textDecoration: "underline dotted",
-                color: "#fbb796",
+                color: vo.primary,
               }}
             >
               Esqueceu os búzios? (Recuperar Senha)

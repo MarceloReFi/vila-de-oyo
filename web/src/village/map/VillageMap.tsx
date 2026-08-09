@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { LayoutGrid } from "lucide-react";
 import { BuildingMarker } from "./BuildingMarker";
+import { chamfer, vo, voFontBody, voFontDisplay } from "../ui/theme";
 
 export interface VillageBuilding {
   id: string;
@@ -23,9 +25,10 @@ const BUILDINGS: VillageBuilding[] = [
 
 export interface VillageMapProps {
   onEnterBuilding: (id: string) => void;
+  onOpenKingdom?: () => void;
 }
 
-export function VillageMap({ onEnterBuilding }: VillageMapProps) {
+export function VillageMap({ onEnterBuilding, onOpenKingdom }: VillageMapProps) {
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -36,6 +39,10 @@ export function VillageMap({ onEnterBuilding }: VillageMapProps) {
   }, []);
 
   const handleClick = (b: VillageBuilding) => {
+    if (b.id === "palace" && onOpenKingdom) {
+      onOpenKingdom();
+      return;
+    }
     if (b.built) {
       onEnterBuilding(b.id);
       return;
@@ -46,7 +53,7 @@ export function VillageMap({ onEnterBuilding }: VillageMapProps) {
   };
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+    <div className="vo-root" style={{ position: "relative", width: "100%", height: "100%" }}>
       <style>{`
         @keyframes vila-marker-pulse { 0%,100% { transform: translate(-50%,-50%) rotate(45deg) scale(1); } 50% { transform: translate(-50%,-50%) rotate(45deg) scale(1.25); } }
         @keyframes vila-toast-in { from { opacity: 0; transform: translate(-50%,10px); } to { opacity: 1; transform: translate(-50%,0); } }
@@ -75,13 +82,14 @@ export function VillageMap({ onEnterBuilding }: VillageMapProps) {
           position: "absolute",
           top: 16,
           left: 16,
+          clipPath: chamfer(6),
           background: "rgba(14,14,14,.75)",
-          border: "2px solid #52443d",
+          border: `2px solid ${vo.outlineVariant}`,
           padding: "6px 14px",
-          fontFamily: "'Space Mono',monospace",
+          fontFamily: voFontDisplay,
           fontSize: 14,
           fontWeight: 700,
-          color: "#fbb796",
+          color: vo.primary,
           textTransform: "uppercase",
           letterSpacing: 1,
           boxShadow: "3px 3px 0 rgba(0,0,0,.6)",
@@ -90,18 +98,48 @@ export function VillageMap({ onEnterBuilding }: VillageMapProps) {
         Vila de Oyó
       </div>
 
+      {onOpenKingdom && (
+        <button
+          onClick={onOpenKingdom}
+          style={{
+            position: "absolute",
+            top: 16,
+            right: 16,
+            clipPath: chamfer(6),
+            background: vo.primaryContainer,
+            border: `2px solid ${vo.outlineVariant}`,
+            padding: "8px 14px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontFamily: voFontDisplay,
+            fontSize: 13,
+            fontWeight: 700,
+            color: vo.onPrimaryContainer,
+            textTransform: "uppercase",
+            letterSpacing: 0.5,
+            cursor: "pointer",
+            boxShadow: "3px 3px 0 rgba(0,0,0,.6)",
+          }}
+        >
+          <LayoutGrid size={16} />
+          Status do Reino
+        </button>
+      )}
+
       <div
         style={{
           position: "absolute",
           bottom: 20,
           left: "50%",
           transform: "translateX(-50%)",
+          clipPath: chamfer(6),
           background: "rgba(14,14,14,.7)",
-          border: "2px solid #52443d",
+          border: `2px solid ${vo.outlineVariant}`,
           padding: "8px 18px",
-          fontFamily: "'Fira Sans',sans-serif",
+          fontFamily: voFontBody,
           fontSize: 14,
-          color: "#e5e2e1",
+          color: vo.onSurface,
           whiteSpace: "nowrap",
         }}
       >
@@ -119,12 +157,13 @@ export function VillageMap({ onEnterBuilding }: VillageMapProps) {
             bottom: 40,
             left: "50%",
             transform: "translateX(-50%)",
-            background: "#0e0e0e",
-            border: "3px solid #52443d",
+            clipPath: chamfer(8),
+            background: vo.surface,
+            border: `3px solid ${vo.outlineVariant}`,
             padding: "12px 20px",
-            fontFamily: "'Fira Sans',sans-serif",
+            fontFamily: voFontBody,
             fontSize: 14,
-            color: "#ffe16d",
+            color: vo.secondaryFixed,
             boxShadow: "4px 4px 0 rgba(0,0,0,.8)",
             animation: "vila-toast-in .25s ease-out",
             zIndex: 50,

@@ -1,4 +1,5 @@
 import { ForgeCommandWindow } from "./ForgeCommandWindow";
+import { chamfer, vo, voFontDisplay } from "../../ui/theme";
 
 export interface ForgeInteriorProps {
   onBack: () => void;
@@ -6,7 +7,7 @@ export interface ForgeInteriorProps {
 
 export function ForgeInterior({ onBack }: ForgeInteriorProps) {
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+    <div className="vo-root" style={{ position: "relative", width: "100%", height: "100%" }}>
       <div
         style={{
           position: "absolute",
@@ -27,13 +28,14 @@ export function ForgeInterior({ onBack }: ForgeInteriorProps) {
           top: 20,
           left: 20,
           zIndex: 20,
+          clipPath: chamfer(6),
           background: "rgba(14,14,14,.8)",
-          border: "2px solid #52443d",
+          border: `2px solid ${vo.outlineVariant}`,
           padding: "8px 16px",
-          fontFamily: "'Space Mono',monospace",
+          fontFamily: voFontDisplay,
           fontSize: 13,
           fontWeight: 700,
-          color: "#fbb796",
+          color: vo.primary,
           textTransform: "uppercase",
           cursor: "pointer",
         }}

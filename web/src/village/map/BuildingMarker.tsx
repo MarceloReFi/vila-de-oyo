@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from "react";
+import { chamfer, voFontDisplay, voFontLabel } from "../ui/theme";
 
 export interface BuildingMarkerProps {
   id: string;
@@ -52,6 +53,7 @@ export function BuildingMarker({ name, sub, left, top, color, onClick }: Buildin
             bottom: 28,
             left: "50%",
             transform: "translateX(-50%)",
+            clipPath: chamfer(6),
             background: "#0e0e0e",
             border: `2px solid ${color}`,
             padding: "8px 12px",
@@ -61,7 +63,7 @@ export function BuildingMarker({ name, sub, left, top, color, onClick }: Buildin
         >
           <div
             style={{
-              fontFamily: "'Space Mono',monospace",
+              fontFamily: voFontDisplay,
               fontSize: 13,
               fontWeight: 700,
               color: "#fff9ef",
@@ -72,7 +74,7 @@ export function BuildingMarker({ name, sub, left, top, color, onClick }: Buildin
           </div>
           <div
             style={{
-              fontFamily: "'JetBrains Mono',monospace",
+              fontFamily: voFontLabel,
               fontSize: 11,
               color: "#d6c2ba",
               marginTop: 2,
