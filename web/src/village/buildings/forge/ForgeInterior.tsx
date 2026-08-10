@@ -61,10 +61,11 @@ export function ForgeInterior({ onBack }: ForgeInteriorProps) {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "flex-start",
           height: "100%",
           padding: 24,
           gap: 16,
+          overflowY: "auto",
         }}
       >
         <ForgeToolTabs tools={TOOLS} active={tool} onChange={setTool} />

@@ -60,10 +60,11 @@ export function MercadoInterior({ onBack }: MercadoInteriorProps) {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "flex-start",
           height: "100%",
           padding: 24,
           gap: 16,
+          overflowY: "auto",
         }}
       >
         <ToolTabs tools={SOURCES} active={source} onChange={setSource} />
