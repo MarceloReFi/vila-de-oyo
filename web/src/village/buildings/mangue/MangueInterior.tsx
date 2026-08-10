@@ -18,6 +18,16 @@ const SOURCES: ToolTabDef<MangueSource>[] = [
   { id: "gitbook", label: "GitBook (futuro)", disabled: true },
 ];
 
+// Which tree in the background art highlights for each active source. The
+// tab click IS the tree hotspot — no separate click region on the image.
+// "gitbook" is disabled/unreachable, so it never resolves past the default.
+const TREE_BACKGROUNDS: Record<MangueSource, string> = {
+  obsidian: "/sprites/mangue-obsidian-selecionado.jpg",
+  local: "/sprites/mangue-arquivos-locais-selecionado.jpg",
+  drive: "/sprites/mangue-google-drive-selecionado.jpg",
+  gitbook: "/sprites/mangue-de-nana.jpg",
+};
+
 export function MangueInterior({ onBack }: MangueInteriorProps) {
   const [source, setSource] = useState<MangueSource>("obsidian");
 
@@ -27,7 +37,7 @@ export function MangueInterior({ onBack }: MangueInteriorProps) {
         style={{
           position: "absolute",
           inset: 0,
-          backgroundImage: "url('/sprites/mangue-de-nana.jpg')",
+          backgroundImage: `url('${TREE_BACKGROUNDS[source]}')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           filter: "blur(4px)",
