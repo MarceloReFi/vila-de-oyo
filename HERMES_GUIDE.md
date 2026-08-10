@@ -74,6 +74,16 @@ Sovereignty**. Resumo do que importa no dia a dia:
   pra isso em vez de reinventar.
 - **Botões**: use `ChamferButton` (`ui/ChamferButton.tsx`) — já implementa
   o "Carved Block": brilho dourado no hover, desloca 2px no clique.
+- **Abas de ferramenta/fonte**: use `ToolTabs` (`ui/ToolTabs.tsx`,
+  genérico, criado junto com o Mangue) pra qualquer construção nova. A
+  Forja ainda usa sua própria `buildings/forge/ForgeToolTabs.tsx`, criada
+  antes do genérico existir — não foi migrada pra evitar mexer em código
+  já em produção sem necessidade. Não duplique `ToolTabs` de novo pra
+  outra construção; reutilize o genérico.
+- **Painel de leitura de uma fonte (lista + loading + erro)**: use
+  `SourcePanel` (`ui/SourcePanel.tsx`, genérico) — usado pelas 3 fontes do
+  Mangue (Obsidian/Arquivos locais/Drive). Escreva só a função de busca de
+  dados (`fetchItems`) e o texto/ícone da fonte; não reimplemente a lista.
 - **Fontes**: use as constantes `voFontDisplay` / `voFontBody` /
   `voFontLabel` de `ui/theme.ts` (Space Mono / Fira Sans / JetBrains Mono,
   auto-hospedadas em `public/fonts/vila-oyo/`). Não escreva
@@ -84,12 +94,23 @@ Sovereignty**. Resumo do que importa no dia a dia:
 
 ## Decisões já tomadas (não reabrir sem motivo)
 
-- Prédio 3 do mapa se chama **"Bosque de Nanã"** — não "Nana's Library"
-  (nome que aparece no mockup `Ila ve Oyo.zip`, mas não é o canônico).
+- Prédio 3 do mapa se chama **"Mangue de Nanã"** — nome definitivo,
+  substitui a denominação anterior "Bosque de Nanã". Não é "Nana's
+  Library" (nome que aparece no mockup `Ila ve Oyo.zip`, nunca foi o
+  canônico).
 - Clicar no marcador do **Palácio**, no mapa, abre o Painel Kingdom (além
   do botão dedicado "Status do Reino" no HUD).
 - Dados do Painel Kingdom (Riqueza, Saúde, Ritual, níveis dos prédios) são
   **placeholder estático** — ainda não há fonte de dados real definida.
+- **Mangue de Nanã**: construído (`built: true` em `VillageMap.tsx`), só
+  leitura por enquanto — Obsidian, Arquivos locais (sem restrição de
+  pasta) e Google Drive, todos com dados placeholder. GitBook é fonte
+  futura, aba desabilitada. Arte de fundo do interior:
+  `web/public/sprites/mangue-de-nana.jpg`, desfocada, mesmo tratamento do
+  `ForgeInterior.tsx`. Escrita/criação/deleção nessas fontes ainda não foi
+  desenhada; quando "Arquivos locais" ganhar delete, usar soft-delete
+  (mover pra uma pasta de lixeira gerenciada pelo Hermes) em vez de apagar
+  de verdade, já que o acesso não tem pasta-raiz restrita.
 
 ## Checklist antes de dar push
 

@@ -2,10 +2,11 @@ import { useState } from "react";
 import { VillageGate } from "@/village/Gate/VillageGate";
 import { VillageMap } from "@/village/map/VillageMap";
 import { ForgeInterior } from "@/village/buildings/forge/ForgeInterior";
+import { MangueInterior } from "@/village/buildings/mangue/MangueInterior";
 import { KingdomPanel } from "@/village/kingdom/KingdomPanel";
 import "@/village/theme.css";
 
-type Screen = "gate" | "map" | "forge";
+type Screen = "gate" | "map" | "forge" | "mangue";
 
 export default function VilaOyoPage() {
   const [screen, setScreen] = useState<Screen>("gate");
@@ -17,11 +18,15 @@ export default function VilaOyoPage() {
   if (screen === "forge") {
     return <ForgeInterior onBack={() => setScreen("map")} />;
   }
+  if (screen === "mangue") {
+    return <MangueInterior onBack={() => setScreen("map")} />;
+  }
   return (
     <>
       <VillageMap
         onEnterBuilding={(id) => {
           if (id === "forge") setScreen("forge");
+          if (id === "grove") setScreen("mangue");
         }}
         onOpenKingdom={() => setKingdomOpen(true)}
       />

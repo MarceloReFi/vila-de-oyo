@@ -19,7 +19,7 @@ export interface VillageBuilding {
 const BUILDINGS: VillageBuilding[] = [
   { id: "forge", name: "Ferraria de Ogum", sub: "Ogum · GitHub", left: "14%", top: "38%", color: "#ff8a4c", built: true },
   { id: "palace", name: "Palácio do Alaafin", sub: "Xangô · Painel do Reino", left: "49%", top: "20%", color: "#ffe16d", built: false },
-  { id: "grove", name: "Bosque de Nanã", sub: "Nanã · Obsidian", left: "84%", top: "38%", color: "#c8a2c8", built: false },
+  { id: "grove", name: "Mangue de Nanã", sub: "Nanã · Obsidian", left: "84%", top: "38%", color: "#c8a2c8", built: true },
   { id: "market", name: "Mercado de Exu", sub: "Exu · Telegram", left: "50%", top: "72%", color: "#ff6b6b", built: false },
 ];
 
