@@ -17,6 +17,18 @@ interface GraphData {
   edges: GraphEdge[];
 }
 
+interface MemoryCheckResult {
+  notePath: string;
+  noteUpdatedAt: string;
+  repo: string;
+  lastCommit: {
+    sha: string;
+    message: string;
+    date: string;
+  };
+  newer: "note" | "repo";
+}
+
 const SIZE = 560;
 const CENTER = SIZE / 2;
 const RADIUS = SIZE / 2 - 60;
@@ -26,6 +38,9 @@ export function ObsidianGraph() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
+  const [memoryCheck, setMemoryCheck] = useState<MemoryCheckResult | null>(null);
+  const [memoryLoading, setMemoryLoading] = useState(false);
+  const [memoryError, setMemoryError] = useState("");
 
   useEffect(() => {
     fetchJSON<GraphData>("/api/vila-oyo/forge/obsidian/graph")
@@ -54,6 +69,23 @@ export function ObsidianGraph() {
 
   const showLabels = (data?.nodes.length ?? 0) <= 40;
   const selectedNode = data?.nodes.find((n) => n.path === selected) ?? null;
+
+  const handleMemoryCheck = async () => {
+    if (!selectedNode?.github) return;
+    setMemoryLoading(true);
+    setMemoryError("");
+    setMemoryCheck(null);
+    try {
+      const result = await fetchJSON<MemoryCheckResult>(
+        `/api/vila-oyo/forge/obsidian/memory?path=${encodeURIComponent(selectedNode.path)}&repo=${encodeURIComponent(selectedNode.github)}`
+      );
+      setMemoryCheck(result);
+    } catch (err: unknown) {
+      setMemoryError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setMemoryLoading(false);
+    }
+  };
 
   return (
     <ChamferPanel corner={14} shadow={8} style={{ width: "100%", maxWidth: 640, padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
@@ -137,10 +169,77 @@ export function ObsidianGraph() {
               textAlign: "center",
             }}
           >
-            {selectedNode
-              ? `Selecionado: ${selectedNode.title}${selectedNode.github ? ` — ${selectedNode.github}` : ""}`
-              : "Toque num nó pra selecionar um projeto ou nota."}
+            {selectedNode ? (
+              <>
+                <div>Selecionado: {selectedNode.title}{selectedNode.github ? ` — ${selectedNode.github}` : ""}</div>
+                {selectedNode.github && (
+                  <button
+                    onClick={handleMemoryCheck}
+                    disabled={memoryLoading}
+                    style={{
+                      marginTop: 8,
+                      padding: "6px 12px",
+                      fontFamily: voFontLabel,
+                      fontSize: 11,
+                      background: vo.secondary,
+                      color: vo.onSurface,
+                      border: "none",
+                      borderRadius: 4,
+                      cursor: memoryLoading ? "not-allowed" : "pointer",
+                      opacity: memoryLoading ? 0.7 : 1,
+                    }}
+                  >
+                    {memoryLoading ? "Consultando..." : "Atualizar memória"}
+                  </button>
+                )}
+              </>
+            ) : (
+              "Toque num nó pra selecionar um projeto ou nota."
+            )}
           </div>
+
+          {memoryCheck && (
+            <div
+              style={{
+                clipPath: chamfer(6),
+                background: vo.surfaceContainer,
+                border: `2px solid ${vo.outlineVariant}`,
+                padding: 12,
+                fontFamily: voFontLabel,
+                fontSize: 11,
+                color: vo.onSurfaceVariant,
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+              }}
+            >
+              <div style={{ fontWeight: 700, color: vo.primary }}>Comparação de Memória</div>
+              <div>Nota: {memoryCheck.notePath}</div>
+              <div>Atualizada: {new Date(memoryCheck.noteUpdatedAt).toLocaleString("pt-BR")}</div>
+              <div>Repositório: {memoryCheck.repo}</div>
+              <div>Último commit: {memoryCheck.lastCommit.sha} — {memoryCheck.lastCommit.message}</div>
+              <div>Data commit: {new Date(memoryCheck.lastCommit.date).toLocaleString("pt-BR")}</div>
+              <div style={{ fontWeight: 600, color: memoryCheck.newer === "note" ? "#ff8a4c" : "#4ade80" }}>
+                Mais recente: {memoryCheck.newer === "note" ? "Nota do Obsidian" : "Repositório GitHub"}
+              </div>
+            </div>
+          )}
+
+          {memoryError && (
+            <div
+              style={{
+                clipPath: chamfer(6),
+                background: "#5a0000",
+                border: `2px solid ${vo.tertiaryContainer}`,
+                padding: 12,
+                fontFamily: voFontLabel,
+                fontSize: 11,
+                color: vo.tertiaryContainer,
+              }}
+            >
+              Erro ao consultar: {memoryError}
+            </div>
+          )}
         </>
       )}
     </ChamferPanel>
