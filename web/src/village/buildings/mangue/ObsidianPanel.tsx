@@ -1,26 +1,37 @@
+import { useState } from "react";
 import { fetchJSON } from "@/lib/api";
 import { SourcePanel, type SourceItem } from "../../ui/SourcePanel";
+import { ToolTabs, type ToolTabDef } from "../../ui/ToolTabs";
+import { ObsidianGraph } from "./ObsidianGraph";
 
-/**
- * Real vault listing via the Hermes-side route, which hits the Obsidian
- * Local REST API community plugin with VILA_OYO_OBSIDIAN_API_KEY
- * server-side (Obsidian has no official cloud API of its own). Treated as
- * a source distinct from "Arquivos locais" per the connection model —
- * same machine, different scope.
- */
 async function fetchNotes(): Promise<SourceItem[]> {
   const data = await fetchJSON<{ notes: SourceItem[] }>("/api/vila-oyo/forge/obsidian/notes");
   return data.notes;
 }
 
+type ObsidianView = "graph" | "lista";
+
+const VIEWS: ToolTabDef<ObsidianView>[] = [
+  { id: "graph", label: "Grafo" },
+  { id: "lista", label: "Lista" },
+];
+
 export function ObsidianPanel() {
+  const [view, setView] = useState<ObsidianView>("graph");
   return (
-    <SourcePanel
-      name="Obsidian"
-      subtitle="Notas do vault"
-      icon="◆"
-      loadingText="Emergindo das águas do mangue..."
-      fetchItems={fetchNotes}
-    />
+    <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", alignItems: "center" }}>
+      <ToolTabs tools={VIEWS} active={view} onChange={setView} />
+      {view === "graph" ? (
+        <ObsidianGraph />
+      ) : (
+        <SourcePanel
+          name="Obsidian"
+          subtitle="Notas do vault"
+          icon="◆"
+          loadingText="Emergindo das águas do mangue..."
+          fetchItems={fetchNotes}
+        />
+      )}
+    </div>
   );
 }
