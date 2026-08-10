@@ -98,8 +98,19 @@ Sovereignty**. Resumo do que importa no dia a dia:
   substitui a denominação anterior "Bosque de Nanã". Não é "Nana's
   Library" (nome que aparece no mockup `Ila ve Oyo.zip`, nunca foi o
   canônico).
-- Clicar no marcador do **Palácio**, no mapa, abre o Painel Kingdom (além
-  do botão dedicado "Status do Reino" no HUD).
+- **Palácio do Alaafin**: convertido de modal (Painel Kingdom) pra
+  construção de tela cheia (`built: true`), igual Ferraria/Mangue/
+  Mercado — `KingdomPanel.tsx` foi removido. 8 abas: Visão Geral (o
+  antigo conteúdo do modal, portado sem mudança de dados), Hermes
+  (modelo/tokens/sessões), Armazenamento (limites por fonte), Acesso
+  (credenciais conectadas — **somente leitura**, não é o sistema de
+  distribuir autorizações pra parceiros discutido na Forja, que segue
+  undesigned), Fluxos (status operacional das conexões, distinto de
+  Acesso), Financeiro e Novas Construções (futuro, abas desabilitadas),
+  Relatórios (botão que gera um resumo — texto estático por enquanto,
+  sem fonte de dados real). Todas as abas com dados são placeholder. O
+  botão "Status do Reino" no HUD do mapa e o clique no marcador do
+  Palácio levam pro mesmo lugar agora.
 - Dados do Painel Kingdom (Riqueza, Saúde, Ritual, níveis dos prédios) são
   **placeholder estático** — ainda não há fonte de dados real definida.
 - **Mangue de Nanã**: construído (`built: true` em `VillageMap.tsx`), só

@@ -13,22 +13,18 @@ export interface VillageBuilding {
   built: boolean;
 }
 
-// Positions are tuned to the real "Vista da Vila" isometric art at
-// /sprites/vista-da-vila.png — Ferraria top-left, Palácio top-center,
-// Bosque right by the water, Mercado bottom-center. Re-tune if the art changes.
 const BUILDINGS: VillageBuilding[] = [
   { id: "forge", name: "Ferraria de Ogum", sub: "Ogum · GitHub", left: "14%", top: "38%", color: "#ff8a4c", built: true },
-  { id: "palace", name: "Palácio do Alaafin", sub: "Xangô · Painel do Reino", left: "49%", top: "20%", color: "#ffe16d", built: false },
+  { id: "palace", name: "Palácio do Alaafin", sub: "Xangô · Administração", left: "49%", top: "20%", color: "#ffe16d", built: true },
   { id: "grove", name: "Mangue de Nanã", sub: "Nanã · Obsidian", left: "84%", top: "38%", color: "#c8a2c8", built: true },
   { id: "market", name: "Mercado de Exu", sub: "Exu · Telegram", left: "50%", top: "72%", color: "#ff6b6b", built: true },
 ];
 
 export interface VillageMapProps {
   onEnterBuilding: (id: string) => void;
-  onOpenKingdom?: () => void;
 }
 
-export function VillageMap({ onEnterBuilding, onOpenKingdom }: VillageMapProps) {
+export function VillageMap({ onEnterBuilding }: VillageMapProps) {
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -39,10 +35,6 @@ export function VillageMap({ onEnterBuilding, onOpenKingdom }: VillageMapProps) 
   }, []);
 
   const handleClick = (b: VillageBuilding) => {
-    if (b.id === "palace" && onOpenKingdom) {
-      onOpenKingdom();
-      return;
-    }
     if (b.built) {
       onEnterBuilding(b.id);
       return;
@@ -98,34 +90,32 @@ export function VillageMap({ onEnterBuilding, onOpenKingdom }: VillageMapProps) 
         Vila de Oyó
       </div>
 
-      {onOpenKingdom && (
-        <button
-          onClick={onOpenKingdom}
-          style={{
-            position: "absolute",
-            top: 16,
-            right: 16,
-            clipPath: chamfer(6),
-            background: vo.primaryContainer,
-            border: `2px solid ${vo.outlineVariant}`,
-            padding: "8px 14px",
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            fontFamily: voFontDisplay,
-            fontSize: 13,
-            fontWeight: 700,
-            color: vo.onPrimaryContainer,
-            textTransform: "uppercase",
-            letterSpacing: 0.5,
-            cursor: "pointer",
-            boxShadow: "3px 3px 0 rgba(0,0,0,.6)",
-          }}
-        >
-          <LayoutGrid size={16} />
-          Status do Reino
-        </button>
-      )}
+      <button
+        onClick={() => onEnterBuilding("palace")}
+        style={{
+          position: "absolute",
+          top: 16,
+          right: 16,
+          clipPath: chamfer(6),
+          background: vo.primaryContainer,
+          border: `2px solid ${vo.outlineVariant}`,
+          padding: "8px 14px",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontFamily: voFontDisplay,
+          fontSize: 13,
+          fontWeight: 700,
+          color: vo.onPrimaryContainer,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+          cursor: "pointer",
+          boxShadow: "3px 3px 0 rgba(0,0,0,.6)",
+        }}
+      >
+        <LayoutGrid size={16} />
+        Status do Reino
+      </button>
 
       <div
         style={{

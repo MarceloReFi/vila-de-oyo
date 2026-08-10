@@ -6,7 +6,7 @@ só a personalização — não uma cópia do Hermes Agent em si.
 
 ## Conteúdo
 
-- `web/src/pages/VilaOyoPage.tsx` — orquestra Gate → Map → Forge, e abre o Painel Kingdom
+- `web/src/pages/VilaOyoPage.tsx` — orquestra Gate → Map → Forge/Mangue/Mercado/Palácio
 - `web/src/village/theme.css` — `@font-face` (Space Mono / Fira Sans / JetBrains Mono, auto-hospedadas) + tokens de cor escopados em `.vo-root`
 - `web/src/village/ui/theme.ts` — tokens de cor em JS + helper `chamfer()` (clip-path chanfrado 45°)
 - `web/src/village/ui/ChamferPanel.tsx`, `ChamferButton.tsx`, `ChamferBadge.tsx` — primitivos reutilizáveis do sistema "Sacred Sovereignty"
@@ -17,7 +17,7 @@ só a personalização — não uma cópia do Hermes Agent em si.
 - `web/src/village/buildings/forge/ForgeInterior.tsx` — Ferraria de Ogum, multi-ferramenta: `ForgeCommandWindow.tsx` (GitHub), `VercelDeploymentsPanel.tsx`, `SupabaseQueryPanel.tsx`
 - `web/src/village/buildings/mangue/MangueInterior.tsx` — Mangue de Nanã, leitura em `ObsidianPanel.tsx`, `LocalFilesPanel.tsx`, `GoogleDrivePanel.tsx`
 - `web/src/village/buildings/mercado/MercadoInterior.tsx` — Mercado de Exu, leitura em `GmailPanel.tsx`, `TelegramPanel.tsx`
-- `web/src/village/kingdom/KingdomPanel.tsx` — Painel Kingdom (status do reino), portado de `Painel Kingdon.zip/code.html`
+- `web/src/village/buildings/palace/PalaceInterior.tsx` — Palácio do Alaafin, 8 abas: Visão Geral, Hermes, Armazenamento, Acesso, Fluxos, Relatórios (Financeiro e Novas Construções são futuro, desabilitadas)
 - `web/public/sprites/vista-da-vila.png` — arte do mapa (ver nota abaixo sobre `Ila ve Oyo.zip`)
 - `web/public/fonts/vila-oyo/*.woff2` — subconjuntos latin das 3 fontes do sistema
 - `Ila ve Oyo.zip`, `Painel Kingdon.zip` — exports originais do Claude Design (`DESIGN.md` + mockups). Fonte de verdade do sistema visual; o código acima é a implementação.
@@ -56,10 +56,11 @@ armadilhas já identificadas.
 
 ## Status
 
-Funcional (Gate → Map → Ferraria → Mangue de Nanã → Painel Kingdom), já com o
-sistema visual "Retro-Tactile 16-bit / Sacred Sovereignty": chanfro 45° real
-via clip-path (não `border-radius`), sombra pixel em duas camadas, fontes
-auto-hospedadas, textura de dithering no Gate, ícones via `lucide-react`.
+Funcional (Gate → Map → Ferraria → Mangue de Nanã → Mercado de Exu →
+Palácio do Alaafin), já com o sistema visual "Retro-Tactile 16-bit /
+Sacred Sovereignty": chanfro 45° real via clip-path (não `border-radius`),
+sombra pixel em duas camadas, fontes auto-hospedadas, textura de
+dithering no Gate, ícones via `lucide-react`.
 
 - **Ferraria de Ogum**: multi-ferramenta (GitHub + status de deployments da
   Vercel + query SELECT no Supabase), todos com dados mock.
@@ -68,6 +69,10 @@ auto-hospedadas, textura de dithering no Gate, ícones via `lucide-react`.
   em `mangue-de-nana.jpg`.
 - **Mercado de Exu**: construído, só leitura (Gmail / Telegram, mock, sem
   validação de API real ainda).
+- **Palácio do Alaafin**: convertido de modal (Painel Kingdom) pra
+  construção de tela cheia, igual as outras três. 8 abas: Visão Geral,
+  Hermes, Armazenamento, Acesso, Fluxos, Relatórios (funcionais) +
+  Financeiro e Novas Construções (futuro, desabilitadas).
 
 Decisões tomadas na integração:
 - **Nomenclatura**: "Mangue de Nanã" é o nome definitivo (substituiu "Bosque
@@ -80,11 +85,16 @@ Decisões tomadas na integração:
   perderia essa flexibilidade sem ganhar nada — o novo mockup ficou só como
   referência de mood/estilo. Se quiser mesmo trocar a arte, precisa de uma
   versão sem texto embutido.
-- **Painel Kingdom**: dados (Riqueza, Saúde, Ritual, níveis dos prédios) são
-  placeholder estático — sem fonte de dados real definida ainda.
-- **Marcador do Palácio**: no mapa, clicar no Palácio agora abre o Painel
-  Kingdom (antes só mostrava um toast de "em construção"). Há também um botão
-  dedicado "Status do Reino" no HUD do mapa.
+- **Palácio do Alaafin**: dados de todas as 6 abas funcionais (Visão Geral,
+  Hermes, Armazenamento, Acesso, Fluxos, Relatórios) são placeholder
+  estático — sem fonte de dados real definida ainda. A aba Acesso é
+  **somente leitura** (lista quais credenciais estão configuradas) — não
+  confundir com o sistema de distribuir autorizações pra parceiros
+  discutido na Forja, que segue undesigned.
+- **Marcador do Palácio**: no mapa, clicar no Palácio agora leva direto pra
+  construção de tela cheia (antes só mostrava um toast de "em construção",
+  depois abria um modal). O botão "Status do Reino" no HUD do mapa leva
+  pro mesmo lugar.
 - Componentes ainda não portados 1:1 do mockup: indicador de seleção "Golden
   Spear/Burning Flame" do DESIGN.md não foi implementado — os marcadores do
   mapa mantêm o pulso de diamante já existente.

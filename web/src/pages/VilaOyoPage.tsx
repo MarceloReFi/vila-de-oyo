@@ -4,14 +4,13 @@ import { VillageMap } from "@/village/map/VillageMap";
 import { ForgeInterior } from "@/village/buildings/forge/ForgeInterior";
 import { MangueInterior } from "@/village/buildings/mangue/MangueInterior";
 import { MercadoInterior } from "@/village/buildings/mercado/MercadoInterior";
-import { KingdomPanel } from "@/village/kingdom/KingdomPanel";
+import { PalaceInterior } from "@/village/buildings/palace/PalaceInterior";
 import "@/village/theme.css";
 
-type Screen = "gate" | "map" | "forge" | "mangue" | "mercado";
+type Screen = "gate" | "map" | "forge" | "mangue" | "mercado" | "palace";
 
 export default function VilaOyoPage() {
   const [screen, setScreen] = useState<Screen>("gate");
-  const [kingdomOpen, setKingdomOpen] = useState(false);
 
   if (screen === "gate") {
     return <VillageGate onEnter={() => setScreen("map")} />;
@@ -25,17 +24,17 @@ export default function VilaOyoPage() {
   if (screen === "mercado") {
     return <MercadoInterior onBack={() => setScreen("map")} />;
   }
+  if (screen === "palace") {
+    return <PalaceInterior onBack={() => setScreen("map")} />;
+  }
   return (
-    <>
-      <VillageMap
-        onEnterBuilding={(id) => {
-          if (id === "forge") setScreen("forge");
-          if (id === "grove") setScreen("mangue");
-          if (id === "market") setScreen("mercado");
-        }}
-        onOpenKingdom={() => setKingdomOpen(true)}
-      />
-      {kingdomOpen && <KingdomPanel onClose={() => setKingdomOpen(false)} />}
-    </>
+    <VillageMap
+      onEnterBuilding={(id) => {
+        if (id === "forge") setScreen("forge");
+        if (id === "grove") setScreen("mangue");
+        if (id === "market") setScreen("mercado");
+        if (id === "palace") setScreen("palace");
+      }}
+    />
   );
 }
