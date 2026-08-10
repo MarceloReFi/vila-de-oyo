@@ -111,6 +111,20 @@ Sovereignty**. Resumo do que importa no dia a dia:
   desenhada; quando "Arquivos locais" ganhar delete, usar soft-delete
   (mover pra uma pasta de lixeira gerenciada pelo Hermes) em vez de apagar
   de verdade, já que o acesso não tem pasta-raiz restrita.
+- **Mercado de Exu**: construído (`built: true` em `VillageMap.tsx`), só
+  leitura por enquanto — Gmail e Telegram, ambos com dados placeholder
+  (nenhum dos dois foi validado contra API real durante o design — Gmail
+  não tinha ferramenta MCP carregada na sessão, Telegram não tem
+  conector). Arte de fundo do interior:
+  `web/public/sprites/mercado-de-exu.jpg`, mesmo tratamento (desfocada) do
+  Forge/Mangue. Diferente do Mangue, essa arte tem uma faixa "MERCADO DE
+  EXU" desenhada no topo da própria imagem (candidato único disponível
+  sem UI concorrente embutida) — fica ilegível sob o blur/opacity padrão,
+  mas se um dia trocar a arte por uma sem texto embutido, prefira. Escrita
+  (enviar e-mail/mensagem) ainda não desenhada — quando desenhar, tratar
+  como ação de alto risco (impersonar o usuário), com confirmação
+  explícita tipo rascunho-antes-de-enviar, não o mesmo padrão leve das
+  leituras.
 
 ## Checklist antes de dar push
 

@@ -16,6 +16,7 @@ só a personalização — não uma cópia do Hermes Agent em si.
 - `web/src/village/map/VillageMap.tsx` + `BuildingMarker.tsx` — mapa isométrico
 - `web/src/village/buildings/forge/ForgeInterior.tsx` — Ferraria de Ogum, multi-ferramenta: `ForgeCommandWindow.tsx` (GitHub), `VercelDeploymentsPanel.tsx`, `SupabaseQueryPanel.tsx`
 - `web/src/village/buildings/mangue/MangueInterior.tsx` — Mangue de Nanã, leitura em `ObsidianPanel.tsx`, `LocalFilesPanel.tsx`, `GoogleDrivePanel.tsx`
+- `web/src/village/buildings/mercado/MercadoInterior.tsx` — Mercado de Exu, leitura em `GmailPanel.tsx`, `TelegramPanel.tsx`
 - `web/src/village/kingdom/KingdomPanel.tsx` — Painel Kingdom (status do reino), portado de `Painel Kingdon.zip/code.html`
 - `web/public/sprites/vista-da-vila.png` — arte do mapa (ver nota abaixo sobre `Ila ve Oyo.zip`)
 - `web/public/fonts/vila-oyo/*.woff2` — subconjuntos latin das 3 fontes do sistema
@@ -65,7 +66,8 @@ auto-hospedadas, textura de dithering no Gate, ícones via `lucide-react`.
 - **Mangue de Nanã**: construído, só leitura (Obsidian / Arquivos locais /
   Google Drive, todos mock; GitBook é fonte futura), com arte de fundo real
   em `mangue-de-nana.jpg`.
-- **Mercado de Exu**: ainda não construído.
+- **Mercado de Exu**: construído, só leitura (Gmail / Telegram, mock, sem
+  validação de API real ainda).
 
 Decisões tomadas na integração:
 - **Nomenclatura**: "Mangue de Nanã" é o nome definitivo (substituiu "Bosque
