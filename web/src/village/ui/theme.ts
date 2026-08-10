@@ -24,6 +24,12 @@ export const vo = {
   tertiaryContainer: "#ff636f",
   onTertiaryContainer: "#680016",
   error: "#ffb4ab",
+  // Read-only "resting"/success ember used by the Forge's non-git tool
+  // panels (Vercel deployment status, Supabase query results). Kept
+  // distinct from `tertiaryContainer` (git error) and `secondaryFixed`
+  // (git success spark) so each tool's success state stays visually its
+  // own, per the Forge multi-tool connection model.
+  successEmber: "#8fd19e",
 } as const;
 
 export const voFontDisplay = "'VO Space Mono', monospace";

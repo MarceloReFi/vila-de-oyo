@@ -1,11 +1,23 @@
+import { useState } from "react";
 import { ForgeCommandWindow } from "./ForgeCommandWindow";
+import { ForgeToolTabs, type ForgeTool } from "./ForgeToolTabs";
+import { SupabaseQueryPanel } from "./SupabaseQueryPanel";
+import { VercelDeploymentsPanel } from "./VercelDeploymentsPanel";
 import { chamfer, vo, voFontDisplay } from "../../ui/theme";
 
 export interface ForgeInteriorProps {
   onBack: () => void;
 }
 
+const TOOLS: { id: ForgeTool; label: string }[] = [
+  { id: "github", label: "GitHub" },
+  { id: "vercel", label: "Vercel" },
+  { id: "supabase", label: "Supabase" },
+];
+
 export function ForgeInterior({ onBack }: ForgeInteriorProps) {
+  const [tool, setTool] = useState<ForgeTool>("github");
+
   return (
     <div className="vo-root" style={{ position: "relative", width: "100%", height: "100%" }}>
       <div
@@ -42,8 +54,23 @@ export function ForgeInterior({ onBack }: ForgeInteriorProps) {
       >
         ‹ Vila
       </button>
-      <div style={{ position: "relative", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", height: "100%", padding: 24 }}>
-        <ForgeCommandWindow />
+      <div
+        style={{
+          position: "relative",
+          zIndex: 10,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+          padding: 24,
+          gap: 16,
+        }}
+      >
+        <ForgeToolTabs tools={TOOLS} active={tool} onChange={setTool} />
+        {tool === "github" && <ForgeCommandWindow />}
+        {tool === "vercel" && <VercelDeploymentsPanel />}
+        {tool === "supabase" && <SupabaseQueryPanel />}
       </div>
     </div>
   );
