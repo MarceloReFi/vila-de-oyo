@@ -56,7 +56,7 @@ const ACTIONS: ForgeAction[] = [
 
 /** Pixel-flat SVG renditions of the real forge tools — no icon-font glyphs, per the design brief. */
 function ForgeIcon({ kind }: { kind: ForgeAction["icon"] }) {
-  const common = { width: 40, height: 40, shapeRendering: "crispEdges" as const };
+  const common = { width: 30, height: 30, shapeRendering: "crispEdges" as const };
   if (kind === "hammer") {
     return (
       <svg viewBox="0 0 40 40" {...common}>
@@ -221,7 +221,7 @@ export function ForgeCommandWindow() {
   const deleteFieldsIncomplete = !deleteRepo.trim() || !deletePath.trim();
 
   return (
-    <ChamferPanel corner={14} shadow={8} style={{ width: "100%", maxWidth: 800, padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
+    <ChamferPanel corner={14} shadow={8} style={{ width: "100%", maxWidth: 800, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
       <style>{`
         @keyframes vila-typing { from { width: 0; } to { width: 100%; } }
         @keyframes vila-pulse-opacity { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
@@ -239,7 +239,7 @@ export function ForgeCommandWindow() {
           justifyContent: "space-between",
           alignItems: "center",
           borderBottom: `2px solid ${vo.outlineVariant}`,
-          paddingBottom: 16,
+          paddingBottom: 12,
         }}
       >
         <div>
@@ -262,7 +262,7 @@ export function ForgeCommandWindow() {
         </div>
       </header>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
         {ACTIONS.map((a) => {
           const active = a.id === selected;
           return (
@@ -272,8 +272,8 @@ export function ForgeCommandWindow() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 16,
-                padding: 16,
+                gap: 10,
+                padding: 10,
                 textAlign: "left",
                 clipPath: chamfer(8),
                 border: `2px solid ${active ? vo.tertiaryContainer : vo.outlineVariant}`,
@@ -284,8 +284,8 @@ export function ForgeCommandWindow() {
             >
               <div
                 style={{
-                  width: 64,
-                  height: 64,
+                  width: 48,
+                  height: 48,
                   clipPath: chamfer(6),
                   background: vo.surfaceContainerHighest,
                   border: `2px solid ${active ? vo.tertiaryContainer : vo.outlineVariant}`,
@@ -299,10 +299,10 @@ export function ForgeCommandWindow() {
                 <ForgeIcon kind={a.icon} />
               </div>
               <div>
-                <h3 style={{ fontFamily: voFontDisplay, fontSize: 18, fontWeight: 700, color: active ? vo.tertiaryContainer : vo.onSurface, margin: 0 }}>
+                <h3 style={{ fontFamily: voFontDisplay, fontSize: 15, fontWeight: 700, color: active ? vo.tertiaryContainer : vo.onSurface, margin: 0 }}>
                   {a.title}
                 </h3>
-                <p style={{ fontFamily: voFontLabel, fontSize: 12, fontWeight: 500, color: vo.onSurfaceVariant, margin: "4px 0 0" }}>
+                <p style={{ fontFamily: voFontLabel, fontSize: 11, fontWeight: 500, color: vo.onSurfaceVariant, margin: "4px 0 0" }}>
                   {a.subtitle}
                 </p>
               </div>
@@ -526,46 +526,50 @@ export function ForgeCommandWindow() {
       </div>
 
       {action.id === COMMIT_ACTION_ID && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <select
-            value={commitRepo}
-            onChange={(e) => setCommitRepo(e.target.value)}
-            style={{
-              fontFamily: voFontLabel,
-              fontSize: 13,
-              padding: 10,
-              background: vo.secondary,
-              color: vo.onPrimary,
-              border: "2px solid #0e0e0e",
-              clipPath: chamfer(4),
-            }}
-          >
-            {repoOptions.length === 0 && <option value="">Carregando repositórios...</option>}
-            {repoOptions.map((r) => (
-              <option key={r.fullName} value={r.fullName}>
-                {r.fullName}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            value={commitPath}
-            onChange={(e) => setCommitPath(e.target.value)}
-            placeholder="caminho/do/arquivo.md"
-            style={{
-              fontFamily: voFontLabel,
-              fontSize: 13,
-              padding: 10,
-              background: vo.secondary,
-              color: vo.onPrimary,
-              border: "2px solid #0e0e0e",
-              clipPath: chamfer(4),
-            }}
-          />
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", gap: 10 }}>
+            <select
+              value={commitRepo}
+              onChange={(e) => setCommitRepo(e.target.value)}
+              style={{
+                flex: "1 1 40%",
+                fontFamily: voFontLabel,
+                fontSize: 13,
+                padding: 10,
+                background: vo.secondary,
+                color: vo.onPrimary,
+                border: "2px solid #0e0e0e",
+                clipPath: chamfer(4),
+              }}
+            >
+              {repoOptions.length === 0 && <option value="">Carregando repositórios...</option>}
+              {repoOptions.map((r) => (
+                <option key={r.fullName} value={r.fullName}>
+                  {r.fullName}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              value={commitPath}
+              onChange={(e) => setCommitPath(e.target.value)}
+              placeholder="caminho/do/arquivo.md"
+              style={{
+                flex: "1 1 60%",
+                fontFamily: voFontLabel,
+                fontSize: 13,
+                padding: 10,
+                background: vo.secondary,
+                color: vo.onPrimary,
+                border: "2px solid #0e0e0e",
+                clipPath: chamfer(4),
+              }}
+            />
+          </div>
           <textarea
             value={commitContent}
             onChange={(e) => setCommitContent(e.target.value)}
-            rows={4}
+            rows={3}
             placeholder="Conteúdo completo do arquivo..."
             style={{
               fontFamily: voFontLabel,
@@ -582,11 +586,12 @@ export function ForgeCommandWindow() {
       )}
 
       {action.id === DELETE_ACTION_ID && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", gap: 10 }}>
           <select
             value={deleteRepo}
             onChange={(e) => setDeleteRepo(e.target.value)}
             style={{
+              flex: "1 1 40%",
               fontFamily: voFontLabel,
               fontSize: 13,
               padding: 10,
@@ -609,6 +614,7 @@ export function ForgeCommandWindow() {
             onChange={(e) => setDeletePath(e.target.value)}
             placeholder="caminho/do/arquivo.md"
             style={{
+              flex: "1 1 60%",
               fontFamily: voFontLabel,
               fontSize: 13,
               padding: 10,

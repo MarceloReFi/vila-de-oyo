@@ -63,8 +63,8 @@ export function ForgeInterior({ onBack }: ForgeInteriorProps) {
           alignItems: "center",
           justifyContent: "flex-start",
           height: "100%",
-          padding: 24,
-          gap: 16,
+          padding: 20,
+          gap: 12,
           overflowY: "auto",
         }}
       >
