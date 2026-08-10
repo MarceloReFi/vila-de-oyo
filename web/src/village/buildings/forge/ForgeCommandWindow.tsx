@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { fetchJSON } from "@/lib/api";
 import { ChamferButton } from "../../ui/ChamferButton";
 import { ChamferPanel } from "../../ui/ChamferPanel";
 import { chamfer, vo, voFontDisplay, voFontLabel, voFontBody } from "../../ui/theme";
@@ -11,6 +12,22 @@ interface ForgeAction {
   prompt: string;
   result: string;
 }
+
+interface GithubRepo {
+  name: string;
+  fullName: string;
+  private: boolean;
+  defaultBranch: string;
+  updatedAt: string;
+}
+
+type GithubReposState = "idle" | "loading" | "success" | "error";
+
+// "Consultar a forja" (id 3) is the first Forge action wired to a real
+// backend call — GET /api/vila-oyo/forge/github/repos, which hits the
+// GitHub API with VILA_OYO_GITHUB_TOKEN server-side. The other 3 actions
+// stay simulated (git commit/sync/rebuild have no real endpoint yet).
+const GITHUB_REPOS_ACTION_ID = 3;
 
 const ACTIONS: ForgeAction[] = [
   { id: 0, title: "Temperar novo commit", subtitle: "git commit", icon: "hammer", prompt: "O ferro está pronto para ser moldado...", result: "Hermes: commit forjado — 3 arquivos temperados no fogo do repositório." },
@@ -68,17 +85,36 @@ export function ForgeCommandWindow() {
   const [selected, setSelected] = useState(0);
   const [confirmed, setConfirmed] = useState(false);
   const [particleKey, setParticleKey] = useState(0);
+  const [reposState, setReposState] = useState<GithubReposState>("idle");
+  const [repos, setRepos] = useState<GithubRepo[]>([]);
+  const [reposError, setReposError] = useState("");
   const action = ACTIONS[selected];
 
   const select = (id: number) => {
     setSelected(id);
     setConfirmed(false);
+    setReposState("idle");
   };
   const confirm = () => {
     setConfirmed(true);
     setParticleKey((k) => k + 1);
+    if (action.id === GITHUB_REPOS_ACTION_ID) {
+      setReposState("loading");
+      fetchJSON<{ repos: GithubRepo[] }>("/api/vila-oyo/forge/github/repos")
+        .then((data) => {
+          setRepos(data.repos);
+          setReposState("success");
+        })
+        .catch((err: unknown) => {
+          setReposError(err instanceof Error ? err.message : String(err));
+          setReposState("error");
+        });
+    }
   };
-  const cancel = () => setConfirmed(false);
+  const cancel = () => {
+    setConfirmed(false);
+    setReposState("idle");
+  };
 
   return (
     <ChamferPanel corner={14} shadow={8} style={{ width: "100%", maxWidth: 800, padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
@@ -182,32 +218,100 @@ export function ForgeCommandWindow() {
           boxShadow: "inset 0 0 10px rgba(0,0,0,.8)",
         }}
       >
-        <p
-          key={`${action.id}-${confirmed}`}
-          style={{
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            animation: "vila-typing 1.6s steps(40,end)",
-            fontFamily: voFontBody,
-            fontSize: 18,
-            color: vo.secondaryFixed,
-            margin: 0,
-          }}
-        >
-          {confirmed ? action.result : action.prompt}
-        </p>
-        <div
-          style={{
-            position: "absolute",
-            bottom: 10,
-            right: 10,
-            width: 10,
-            height: 10,
-            background: vo.secondaryFixed,
-            borderRadius: "50%",
-            animation: "vila-pulse-opacity 1.2s infinite",
-          }}
-        />
+        {action.id === GITHUB_REPOS_ACTION_ID && confirmed ? (
+          <>
+            {reposState === "loading" && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "8px 0" }}>
+                <div style={{ width: 36, height: 36, background: "#ff8a4c", clipPath: chamfer(6), boxShadow: "0 0 24px #ff8a4c" }} />
+                <span style={{ fontFamily: voFontLabel, fontSize: 12, color: vo.onSurfaceVariant }}>
+                  Consultando os repositórios reais...
+                </span>
+              </div>
+            )}
+            {reposState === "success" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 280, overflowY: "auto" }}>
+                {repos.map((r) => (
+                  <div
+                    key={r.fullName}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      background: vo.surfaceContainer,
+                      border: `2px solid ${vo.outlineVariant}`,
+                      padding: 10,
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontFamily: voFontLabel,
+                          fontSize: 13,
+                          color: vo.onSurface,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {r.fullName}
+                      </div>
+                      <div style={{ fontFamily: voFontLabel, fontSize: 11, color: vo.onSurfaceVariant }}>
+                        {r.defaultBranch}
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        fontFamily: voFontLabel,
+                        fontSize: 10,
+                        padding: "4px 8px",
+                        border: `1px solid ${vo.outlineVariant}`,
+                        color: vo.onSurfaceVariant,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {r.private ? "PRIVADO" : "PÚBLICO"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {reposState === "error" && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, color: vo.tertiaryContainer, padding: "8px 0" }}>
+                <div style={{ width: 36, height: 36, background: "#5a0000", border: `2px solid ${vo.tertiaryContainer}`, clipPath: chamfer(6) }} />
+                <span style={{ fontFamily: voFontLabel, fontSize: 11, textAlign: "center" }}>{reposError}</span>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <p
+              key={`${action.id}-${confirmed}`}
+              style={{
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                animation: "vila-typing 1.6s steps(40,end)",
+                fontFamily: voFontBody,
+                fontSize: 18,
+                color: vo.secondaryFixed,
+                margin: 0,
+              }}
+            >
+              {confirmed ? action.result : action.prompt}
+            </p>
+            <div
+              style={{
+                position: "absolute",
+                bottom: 10,
+                right: 10,
+                width: 10,
+                height: 10,
+                background: vo.secondaryFixed,
+                borderRadius: "50%",
+                animation: "vila-pulse-opacity 1.2s infinite",
+              }}
+            />
+          </>
+        )}
       </div>
 
       {confirmed && (
