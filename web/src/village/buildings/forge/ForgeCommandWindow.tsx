@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchJSON } from "@/lib/api";
 import { ChamferButton } from "../../ui/ChamferButton";
 import { ChamferPanel } from "../../ui/ChamferPanel";
@@ -21,13 +21,21 @@ interface GithubRepo {
   updatedAt: string;
 }
 
-type GithubReposState = "idle" | "loading" | "success" | "error";
+interface CommitFileResult {
+  htmlUrl: string;
+  path: string;
+  created: boolean;
+}
 
-// "Consultar a forja" (id 3) is the first Forge action wired to a real
-// backend call — GET /api/vila-oyo/forge/github/repos, which hits the
-// GitHub API with VILA_OYO_GITHUB_TOKEN server-side. The other 3 actions
-// stay simulated (git commit/sync/rebuild have no real endpoint yet).
+type GithubReposState = "idle" | "loading" | "success" | "error";
+type CommitState = "idle" | "loading" | "success" | "error";
+
+// "Consultar a forja" (id 3) and "Temperar novo commit" (id 0) are wired
+// to real backend calls — GET/POST /api/vila-oyo/forge/github/{repos,commit},
+// which hit the GitHub API with VILA_OYO_GITHUB_TOKEN server-side. The
+// other 2 actions stay simulated (git sync/rebuild have no real endpoint yet).
 const GITHUB_REPOS_ACTION_ID = 3;
+const COMMIT_ACTION_ID = 0;
 
 const ACTIONS: ForgeAction[] = [
   { id: 0, title: "Temperar novo commit", subtitle: "git commit", icon: "hammer", prompt: "O ferro está pronto para ser moldado...", result: "Hermes: commit forjado — 3 arquivos temperados no fogo do repositório." },
@@ -88,12 +96,37 @@ export function ForgeCommandWindow() {
   const [reposState, setReposState] = useState<GithubReposState>("idle");
   const [repos, setRepos] = useState<GithubRepo[]>([]);
   const [reposError, setReposError] = useState("");
+
+  // Repo dropdown for "Temperar novo commit" — fetched once on mount so
+  // it's ready by the time the user opens that action, reusing the same
+  // GET /repos endpoint "Consultar a forja" calls on confirm.
+  const [repoOptions, setRepoOptions] = useState<GithubRepo[]>([]);
+  const [commitRepo, setCommitRepo] = useState("");
+  const [commitPath, setCommitPath] = useState("");
+  const [commitContent, setCommitContent] = useState("");
+  const [commitState, setCommitState] = useState<CommitState>("idle");
+  const [commitResult, setCommitResult] = useState<CommitFileResult | null>(null);
+  const [commitError, setCommitError] = useState("");
+
+  useEffect(() => {
+    fetchJSON<{ repos: GithubRepo[] }>("/api/vila-oyo/forge/github/repos")
+      .then((data) => {
+        setRepoOptions(data.repos);
+        setCommitRepo((prev) => prev || data.repos[0]?.fullName || "");
+      })
+      .catch(() => {
+        // Dropdown just stays empty — the user will see the real error
+        // anyway if they try "Consultar a forja" instead.
+      });
+  }, []);
+
   const action = ACTIONS[selected];
 
   const select = (id: number) => {
     setSelected(id);
     setConfirmed(false);
     setReposState("idle");
+    setCommitState("idle");
   };
   const confirm = () => {
     setConfirmed(true);
@@ -109,12 +142,29 @@ export function ForgeCommandWindow() {
           setReposError(err instanceof Error ? err.message : String(err));
           setReposState("error");
         });
+    } else if (action.id === COMMIT_ACTION_ID) {
+      setCommitState("loading");
+      fetchJSON<CommitFileResult>("/api/vila-oyo/forge/github/commit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repo: commitRepo, path: commitPath, content: commitContent }),
+      })
+        .then((data) => {
+          setCommitResult(data);
+          setCommitState("success");
+        })
+        .catch((err: unknown) => {
+          setCommitError(err instanceof Error ? err.message : String(err));
+          setCommitState("error");
+        });
     }
   };
   const cancel = () => {
     setConfirmed(false);
     setReposState("idle");
+    setCommitState("idle");
   };
+  const commitFieldsIncomplete = !commitRepo.trim() || !commitPath.trim() || !commitContent.trim();
 
   return (
     <ChamferPanel corner={14} shadow={8} style={{ width: "100%", maxWidth: 800, padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
@@ -218,7 +268,71 @@ export function ForgeCommandWindow() {
           boxShadow: "inset 0 0 10px rgba(0,0,0,.8)",
         }}
       >
-        {action.id === GITHUB_REPOS_ACTION_ID && confirmed ? (
+        {action.id === COMMIT_ACTION_ID && confirmed ? (
+          <>
+            {commitState === "loading" && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "8px 0" }}>
+                <div style={{ width: 36, height: 36, background: "#ff8a4c", clipPath: chamfer(6), boxShadow: "0 0 24px #ff8a4c" }} />
+                <span style={{ fontFamily: voFontLabel, fontSize: 12, color: vo.onSurfaceVariant }}>
+                  Temperando o commit...
+                </span>
+              </div>
+            )}
+            {commitState === "success" && commitResult && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  background: vo.surfaceContainer,
+                  border: `2px solid ${vo.outlineVariant}`,
+                  padding: 10,
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontFamily: voFontLabel,
+                      fontSize: 13,
+                      color: vo.onSurface,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {commitResult.path}
+                  </div>
+                  <a
+                    href={commitResult.htmlUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ fontFamily: voFontLabel, fontSize: 11, color: vo.secondaryFixed }}
+                  >
+                    Ver no GitHub
+                  </a>
+                </div>
+                <span
+                  style={{
+                    fontFamily: voFontLabel,
+                    fontSize: 10,
+                    padding: "4px 8px",
+                    border: `1px solid ${vo.outlineVariant}`,
+                    color: vo.onSurfaceVariant,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {commitResult.created ? "CRIADO" : "ATUALIZADO"}
+                </span>
+              </div>
+            )}
+            {commitState === "error" && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, color: vo.tertiaryContainer, padding: "8px 0" }}>
+                <div style={{ width: 36, height: 36, background: "#5a0000", border: `2px solid ${vo.tertiaryContainer}`, clipPath: chamfer(6) }} />
+                <span style={{ fontFamily: voFontLabel, fontSize: 11, textAlign: "center" }}>{commitError}</span>
+              </div>
+            )}
+          </>
+        ) : action.id === GITHUB_REPOS_ACTION_ID && confirmed ? (
           <>
             {reposState === "loading" && (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "8px 0" }}>
@@ -314,6 +428,62 @@ export function ForgeCommandWindow() {
         )}
       </div>
 
+      {action.id === COMMIT_ACTION_ID && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <select
+            value={commitRepo}
+            onChange={(e) => setCommitRepo(e.target.value)}
+            style={{
+              fontFamily: voFontLabel,
+              fontSize: 13,
+              padding: 10,
+              background: vo.secondary,
+              color: vo.onPrimary,
+              border: "2px solid #0e0e0e",
+              clipPath: chamfer(4),
+            }}
+          >
+            {repoOptions.length === 0 && <option value="">Carregando repositórios...</option>}
+            {repoOptions.map((r) => (
+              <option key={r.fullName} value={r.fullName}>
+                {r.fullName}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            value={commitPath}
+            onChange={(e) => setCommitPath(e.target.value)}
+            placeholder="caminho/do/arquivo.md"
+            style={{
+              fontFamily: voFontLabel,
+              fontSize: 13,
+              padding: 10,
+              background: vo.secondary,
+              color: vo.onPrimary,
+              border: "2px solid #0e0e0e",
+              clipPath: chamfer(4),
+            }}
+          />
+          <textarea
+            value={commitContent}
+            onChange={(e) => setCommitContent(e.target.value)}
+            rows={4}
+            placeholder="Conteúdo completo do arquivo..."
+            style={{
+              fontFamily: voFontLabel,
+              fontSize: 13,
+              padding: 10,
+              background: vo.secondary,
+              color: vo.onPrimary,
+              border: "2px solid #0e0e0e",
+              clipPath: chamfer(4),
+              resize: "vertical",
+            }}
+          />
+        </div>
+      )}
+
       {confirmed && (
         <div key={particleKey} style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 20, overflow: "hidden" }}>
           <div style={{ position: "absolute", top: 70, right: 70, width: 8, height: 8, borderRadius: "50%", background: "#ff8a4c", animation: "vila-spark1 .7s ease-out forwards" }} />
@@ -329,7 +499,17 @@ export function ForgeCommandWindow() {
         <ChamferButton variant="secondary" corner={6} onClick={cancel} style={{ fontSize: 13, padding: "10px 24px" }}>
           Cancelar
         </ChamferButton>
-        <ChamferButton variant="primary" corner={6} onClick={confirm} style={{ fontSize: 13, padding: "10px 24px" }}>
+        <ChamferButton
+          variant="primary"
+          corner={6}
+          onClick={confirm}
+          disabled={action.id === COMMIT_ACTION_ID && commitFieldsIncomplete}
+          style={{
+            fontSize: 13,
+            padding: "10px 24px",
+            opacity: action.id === COMMIT_ACTION_ID && commitFieldsIncomplete ? 0.5 : 1,
+          }}
+        >
           Confirmar
         </ChamferButton>
       </div>
