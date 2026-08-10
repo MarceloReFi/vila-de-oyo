@@ -8,7 +8,7 @@ interface ForgeAction {
   id: number;
   title: string;
   subtitle: string;
-  icon: "hammer" | "bellows" | "tongs" | "whetstone";
+  icon: "hammer" | "bellows" | "tongs" | "whetstone" | "shears";
   prompt: string;
   result: string;
 }
@@ -27,21 +27,31 @@ interface CommitFileResult {
   created: boolean;
 }
 
+interface DeleteFileResult {
+  path: string;
+  deleted: boolean;
+}
+
 type GithubReposState = "idle" | "loading" | "success" | "error";
 type CommitState = "idle" | "loading" | "success" | "error";
+type DeleteState = "idle" | "confirming" | "loading" | "success" | "error";
 
-// "Consultar a forja" (id 3) and "Temperar novo commit" (id 0) are wired
-// to real backend calls — GET/POST /api/vila-oyo/forge/github/{repos,commit},
-// which hit the GitHub API with VILA_OYO_GITHUB_TOKEN server-side. The
-// other 2 actions stay simulated (git sync/rebuild have no real endpoint yet).
+// "Consultar a forja" (id 3), "Temperar novo commit" (id 0) and "Deletar
+// arquivo" (id 4) are wired to real backend calls — GET/POST
+// /api/vila-oyo/forge/github/{repos,commit,delete}, which hit the GitHub
+// API with VILA_OYO_GITHUB_TOKEN server-side. Sync/rebuild (ids 1, 2)
+// stay simulated — they need their own design pass (no local working
+// copy in this remote-API model).
 const GITHUB_REPOS_ACTION_ID = 3;
 const COMMIT_ACTION_ID = 0;
+const DELETE_ACTION_ID = 4;
 
 const ACTIONS: ForgeAction[] = [
   { id: 0, title: "Temperar novo commit", subtitle: "git commit", icon: "hammer", prompt: "O ferro está pronto para ser moldado...", result: "Hermes: commit forjado — 3 arquivos temperados no fogo do repositório." },
   { id: 1, title: "Soprar o fole", subtitle: "git sync", icon: "bellows", prompt: "O fole aviva as chamas...", result: "Hermes: sincronizado com a origem — 2 commits recebidos, 1 enviado." },
   { id: 2, title: "Puxar do fogo", subtitle: "git rebuild", icon: "tongs", prompt: "O metal aquece novamente sob as pinças...", result: "Hermes: rebuild completo — a lâmina saiu mais afiada." },
   { id: 3, title: "Consultar a forja", subtitle: "git log", icon: "whetstone", prompt: "As marcas do martelo contam a história...", result: "Hermes: últimos 5 commits exibidos no registro da forja." },
+  { id: 4, title: "Deletar arquivo", subtitle: "git rm", icon: "shears", prompt: "A tesoura de ferro aguarda o corte...", result: "" },
 ];
 
 /** Pixel-flat SVG renditions of the real forge tools — no icon-font glyphs, per the design brief. */
@@ -80,6 +90,17 @@ function ForgeIcon({ kind }: { kind: ForgeAction["icon"] }) {
       </svg>
     );
   }
+  if (kind === "shears") {
+    return (
+      <svg viewBox="0 0 40 40" {...common}>
+        <rect x="4" y="5" width="22" height="5" fill="#9f8d85" stroke="#0e0e0e" strokeWidth={1} transform="rotate(32 15 7)" />
+        <rect x="4" y="30" width="22" height="5" fill="#9f8d85" stroke="#0e0e0e" strokeWidth={1} transform="rotate(-32 15 33)" />
+        <rect x="24" y="12" width="10" height="4" fill="#3a220f" transform="rotate(18 29 14)" />
+        <rect x="24" y="24" width="10" height="4" fill="#3a220f" transform="rotate(-18 29 26)" />
+        <circle cx="19" cy="20" r="3.5" fill="#4a4a4a" stroke="#0e0e0e" strokeWidth={1} />
+      </svg>
+    );
+  }
   return (
     <svg viewBox="0 0 40 40" {...common}>
       <rect x="4" y="24" width="32" height="8" fill="#5a3a20" stroke="#3a220f" strokeWidth={1} />
@@ -97,9 +118,8 @@ export function ForgeCommandWindow() {
   const [repos, setRepos] = useState<GithubRepo[]>([]);
   const [reposError, setReposError] = useState("");
 
-  // Repo dropdown for "Temperar novo commit" — fetched once on mount so
-  // it's ready by the time the user opens that action, reusing the same
-  // GET /repos endpoint "Consultar a forja" calls on confirm.
+  // Repo dropdown for "Temperar novo commit" and "Deletar arquivo" —
+  // fetched once on mount so it's ready by the time either action opens.
   const [repoOptions, setRepoOptions] = useState<GithubRepo[]>([]);
   const [commitRepo, setCommitRepo] = useState("");
   const [commitPath, setCommitPath] = useState("");
@@ -108,14 +128,21 @@ export function ForgeCommandWindow() {
   const [commitResult, setCommitResult] = useState<CommitFileResult | null>(null);
   const [commitError, setCommitError] = useState("");
 
+  const [deleteRepo, setDeleteRepo] = useState("");
+  const [deletePath, setDeletePath] = useState("");
+  const [deleteState, setDeleteState] = useState<DeleteState>("idle");
+  const [deleteResult, setDeleteResult] = useState<DeleteFileResult | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+
   useEffect(() => {
     fetchJSON<{ repos: GithubRepo[] }>("/api/vila-oyo/forge/github/repos")
       .then((data) => {
         setRepoOptions(data.repos);
         setCommitRepo((prev) => prev || data.repos[0]?.fullName || "");
+        setDeleteRepo((prev) => prev || data.repos[0]?.fullName || "");
       })
       .catch(() => {
-        // Dropdown just stays empty — the user will see the real error
+        // Dropdowns just stay empty — the user will see the real error
         // anyway if they try "Consultar a forja" instead.
       });
   }, []);
@@ -127,7 +154,26 @@ export function ForgeCommandWindow() {
     setConfirmed(false);
     setReposState("idle");
     setCommitState("idle");
+    setDeleteState("idle");
   };
+
+  const runDelete = () => {
+    setDeleteState("loading");
+    fetchJSON<DeleteFileResult>("/api/vila-oyo/forge/github/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ repo: deleteRepo, path: deletePath }),
+    })
+      .then((data) => {
+        setDeleteResult(data);
+        setDeleteState("success");
+      })
+      .catch((err: unknown) => {
+        setDeleteError(err instanceof Error ? err.message : String(err));
+        setDeleteState("error");
+      });
+  };
+
   const confirm = () => {
     setConfirmed(true);
     setParticleKey((k) => k + 1);
@@ -157,14 +203,22 @@ export function ForgeCommandWindow() {
           setCommitError(err instanceof Error ? err.message : String(err));
           setCommitState("error");
         });
+    } else if (action.id === DELETE_ACTION_ID) {
+      // First click only opens the double-confirm warning — the real
+      // DELETE call only fires from runDelete(), triggered by the
+      // in-panel "Confirmar exclusão" button. Irreversible action, per
+      // design decision.
+      setDeleteState("confirming");
     }
   };
   const cancel = () => {
     setConfirmed(false);
     setReposState("idle");
     setCommitState("idle");
+    setDeleteState("idle");
   };
   const commitFieldsIncomplete = !commitRepo.trim() || !commitPath.trim() || !commitContent.trim();
+  const deleteFieldsIncomplete = !deleteRepo.trim() || !deletePath.trim();
 
   return (
     <ChamferPanel corner={14} shadow={8} style={{ width: "100%", maxWidth: 800, padding: 24, display: "flex", flexDirection: "column", gap: 24 }}>
@@ -268,7 +322,50 @@ export function ForgeCommandWindow() {
           boxShadow: "inset 0 0 10px rgba(0,0,0,.8)",
         }}
       >
-        {action.id === COMMIT_ACTION_ID && confirmed ? (
+        {action.id === DELETE_ACTION_ID && confirmed ? (
+          <>
+            {deleteState === "confirming" && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "8px 0" }}>
+                <div style={{ width: 40, height: 40, background: "#5a0000", border: `2px solid ${vo.tertiaryContainer}`, clipPath: chamfer(6) }} />
+                <span style={{ fontFamily: voFontLabel, fontSize: 12, color: vo.tertiaryContainer, textAlign: "center" }}>
+                  Tem certeza que deseja deletar <strong>{deletePath}</strong> de <strong>{deleteRepo}</strong>?
+                  <br />
+                  Essa ação não pode ser desfeita.
+                </span>
+                <ChamferButton
+                  variant="primary"
+                  corner={6}
+                  onClick={runDelete}
+                  style={{ fontSize: 12, padding: "8px 20px", background: vo.tertiaryContainer, borderColor: "#680016" }}
+                >
+                  Confirmar exclusão
+                </ChamferButton>
+              </div>
+            )}
+            {deleteState === "loading" && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "8px 0" }}>
+                <div style={{ width: 36, height: 36, background: "#5a0000", border: `2px solid ${vo.tertiaryContainer}`, clipPath: chamfer(6) }} />
+                <span style={{ fontFamily: voFontLabel, fontSize: 12, color: vo.onSurfaceVariant }}>
+                  Cortando o arquivo da forja...
+                </span>
+              </div>
+            )}
+            {deleteState === "success" && deleteResult && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "8px 0" }}>
+                <div style={{ width: 36, height: 36, background: "#3a1010", border: `2px solid ${vo.tertiaryContainer}`, clipPath: chamfer(6) }} />
+                <span style={{ fontFamily: voFontLabel, fontSize: 12, color: vo.onSurfaceVariant, textAlign: "center" }}>
+                  {deleteResult.path} foi removido do repositório.
+                </span>
+              </div>
+            )}
+            {deleteState === "error" && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, color: vo.tertiaryContainer, padding: "8px 0" }}>
+                <div style={{ width: 36, height: 36, background: "#5a0000", border: `2px solid ${vo.tertiaryContainer}`, clipPath: chamfer(6) }} />
+                <span style={{ fontFamily: voFontLabel, fontSize: 11, textAlign: "center" }}>{deleteError}</span>
+              </div>
+            )}
+          </>
+        ) : action.id === COMMIT_ACTION_ID && confirmed ? (
           <>
             {commitState === "loading" && (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "8px 0" }}>
@@ -484,7 +581,47 @@ export function ForgeCommandWindow() {
         </div>
       )}
 
-      {confirmed && (
+      {action.id === DELETE_ACTION_ID && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <select
+            value={deleteRepo}
+            onChange={(e) => setDeleteRepo(e.target.value)}
+            style={{
+              fontFamily: voFontLabel,
+              fontSize: 13,
+              padding: 10,
+              background: vo.secondary,
+              color: vo.onPrimary,
+              border: "2px solid #0e0e0e",
+              clipPath: chamfer(4),
+            }}
+          >
+            {repoOptions.length === 0 && <option value="">Carregando repositórios...</option>}
+            {repoOptions.map((r) => (
+              <option key={r.fullName} value={r.fullName}>
+                {r.fullName}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            value={deletePath}
+            onChange={(e) => setDeletePath(e.target.value)}
+            placeholder="caminho/do/arquivo.md"
+            style={{
+              fontFamily: voFontLabel,
+              fontSize: 13,
+              padding: 10,
+              background: vo.secondary,
+              color: vo.onPrimary,
+              border: "2px solid #0e0e0e",
+              clipPath: chamfer(4),
+            }}
+          />
+        </div>
+      )}
+
+      {confirmed && action.id !== DELETE_ACTION_ID && (
         <div key={particleKey} style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 20, overflow: "hidden" }}>
           <div style={{ position: "absolute", top: 70, right: 70, width: 8, height: 8, borderRadius: "50%", background: "#ff8a4c", animation: "vila-spark1 .7s ease-out forwards" }} />
           <div style={{ position: "absolute", top: 70, right: 70, width: 8, height: 8, borderRadius: "50%", background: "#ffe16d", animation: "vila-spark2 .7s ease-out forwards" }} />
@@ -503,11 +640,18 @@ export function ForgeCommandWindow() {
           variant="primary"
           corner={6}
           onClick={confirm}
-          disabled={action.id === COMMIT_ACTION_ID && commitFieldsIncomplete}
+          disabled={
+            (action.id === COMMIT_ACTION_ID && commitFieldsIncomplete) ||
+            (action.id === DELETE_ACTION_ID && (deleteFieldsIncomplete || deleteState === "confirming"))
+          }
           style={{
             fontSize: 13,
             padding: "10px 24px",
-            opacity: action.id === COMMIT_ACTION_ID && commitFieldsIncomplete ? 0.5 : 1,
+            opacity:
+              (action.id === COMMIT_ACTION_ID && commitFieldsIncomplete) ||
+              (action.id === DELETE_ACTION_ID && (deleteFieldsIncomplete || deleteState === "confirming"))
+                ? 0.5
+                : 1,
           }}
         >
           Confirmar
