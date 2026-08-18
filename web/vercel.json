@@ -1,0 +1,8 @@
+{
+  "buildCommand": "npm run build:showcase",
+  "outputDirectory": "dist-showcase",
+  "installCommand": "npm install",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.showcase.html" }
+  ]
+}
