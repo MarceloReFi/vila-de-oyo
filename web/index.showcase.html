@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Vila de Oyó</title>
+    <!--
+      Deliberately no @import of the app's src/index.css here: that file
+      pulls in @nous-research/ui's stylesheet (fonts.css, globals.css) and
+      Tailwind, neither of which village/ actually uses (confirmed: zero
+      Tailwind utility classes, zero @nous-research/ui components in the
+      whole village/ tree). Keeping this entry free of that import is what
+      keeps @nous-research/ui out of the showcase build entirely. This is
+      just the bare box-sizing/margin reset it would otherwise provide.
+    -->
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; }
+      #root { height: 100%; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.showcase.tsx"></script>
+  </body>
+</html>

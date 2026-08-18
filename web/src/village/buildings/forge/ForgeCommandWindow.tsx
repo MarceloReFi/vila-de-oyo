@@ -3,6 +3,7 @@ import { fetchJSON } from "@/lib/api";
 import { ChamferButton } from "../../ui/ChamferButton";
 import { ChamferPanel } from "../../ui/ChamferPanel";
 import { chamfer, vo, voFontDisplay, voFontLabel, voFontBody } from "../../ui/theme";
+import { SHOWCASE_MODE, mockDelay } from "../../lib/showcase";
 
 interface ForgeAction {
   id: number;
@@ -45,6 +46,14 @@ type DeleteState = "idle" | "confirming" | "loading" | "success" | "error";
 const GITHUB_REPOS_ACTION_ID = 3;
 const COMMIT_ACTION_ID = 0;
 const DELETE_ACTION_ID = 4;
+
+// Showcase-only stand-ins for the real GitHub API response shapes — used
+// exclusively when SHOWCASE_MODE is on, never in the real dashboard build.
+const MOCK_REPOS: GithubRepo[] = [
+  { name: "vila-de-oyo", fullName: "MarceloReFi/vila-de-oyo", private: false, defaultBranch: "main", updatedAt: "2026-08-15T14:22:00Z" },
+  { name: "hermes-agent", fullName: "NousResearch/hermes-agent", private: true, defaultBranch: "main", updatedAt: "2026-08-16T09:10:00Z" },
+  { name: "refaz-xrpl", fullName: "MarceloReFi/refaz-xrpl", private: true, defaultBranch: "main", updatedAt: "2026-08-10T18:41:00Z" },
+];
 
 const ACTIONS: ForgeAction[] = [
   { id: 0, title: "Temperar novo commit", subtitle: "git commit", icon: "hammer", prompt: "O ferro está pronto para ser moldado...", result: "Hermes: commit forjado — 3 arquivos temperados no fogo do repositório." },
@@ -135,6 +144,14 @@ export function ForgeCommandWindow() {
   const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
+    if (SHOWCASE_MODE) {
+      mockDelay(300).then(() => {
+        setRepoOptions(MOCK_REPOS);
+        setCommitRepo((prev) => prev || MOCK_REPOS[0]?.fullName || "");
+        setDeleteRepo((prev) => prev || MOCK_REPOS[0]?.fullName || "");
+      });
+      return;
+    }
     fetchJSON<{ repos: GithubRepo[] }>("/api/vila-oyo/forge/github/repos")
       .then((data) => {
         setRepoOptions(data.repos);
@@ -159,6 +176,13 @@ export function ForgeCommandWindow() {
 
   const runDelete = () => {
     setDeleteState("loading");
+    if (SHOWCASE_MODE) {
+      mockDelay(500).then(() => {
+        setDeleteResult({ path: deletePath, deleted: true });
+        setDeleteState("success");
+      });
+      return;
+    }
     fetchJSON<DeleteFileResult>("/api/vila-oyo/forge/github/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -179,6 +203,13 @@ export function ForgeCommandWindow() {
     setParticleKey((k) => k + 1);
     if (action.id === GITHUB_REPOS_ACTION_ID) {
       setReposState("loading");
+      if (SHOWCASE_MODE) {
+        mockDelay(500).then(() => {
+          setRepos(MOCK_REPOS);
+          setReposState("success");
+        });
+        return;
+      }
       fetchJSON<{ repos: GithubRepo[] }>("/api/vila-oyo/forge/github/repos")
         .then((data) => {
           setRepos(data.repos);
@@ -190,6 +221,17 @@ export function ForgeCommandWindow() {
         });
     } else if (action.id === COMMIT_ACTION_ID) {
       setCommitState("loading");
+      if (SHOWCASE_MODE) {
+        mockDelay(500).then(() => {
+          setCommitResult({
+            htmlUrl: `https://github.com/${commitRepo}/blob/main/${commitPath}`,
+            path: commitPath,
+            created: true,
+          });
+          setCommitState("success");
+        });
+        return;
+      }
       fetchJSON<CommitFileResult>("/api/vila-oyo/forge/github/commit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

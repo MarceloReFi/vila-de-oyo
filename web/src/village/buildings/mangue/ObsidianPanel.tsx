@@ -3,8 +3,20 @@ import { fetchJSON } from "@/lib/api";
 import { SourcePanel, type SourceItem } from "../../ui/SourcePanel";
 import { ToolTabs, type ToolTabDef } from "../../ui/ToolTabs";
 import { ObsidianGraph } from "./ObsidianGraph";
+import { SHOWCASE_MODE, mockDelay } from "../../lib/showcase";
+
+const MOCK_NOTES: SourceItem[] = [
+  { id: "1", title: "Vila de Oyó — visão geral", meta: "Vault raiz", time: "há 2 dias" },
+  { id: "2", title: "Sacred Sovereignty — design system", meta: "design/", time: "há 5 dias" },
+  { id: "3", title: "Ferraria de Ogum — notas de conexão", meta: "projetos/hermes/", time: "há 1 semana" },
+  { id: "4", title: "Backlog Palácio do Alaafin", meta: "projetos/hermes/", time: "há 2 semanas" },
+];
 
 async function fetchNotes(): Promise<SourceItem[]> {
+  if (SHOWCASE_MODE) {
+    await mockDelay();
+    return MOCK_NOTES;
+  }
   const data = await fetchJSON<{ notes: SourceItem[] }>("/api/vila-oyo/forge/obsidian/notes");
   return data.notes;
 }

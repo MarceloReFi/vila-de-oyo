@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchJSON } from "@/lib/api";
 import { ChamferPanel } from "../../ui/ChamferPanel";
 import { chamfer, vo, voFontDisplay, voFontLabel } from "../../ui/theme";
+import { SHOWCASE_MODE, mockDelay } from "../../lib/showcase";
 
 interface GraphNode {
   path: string;
@@ -33,6 +34,26 @@ const SIZE = 560;
 const CENTER = SIZE / 2;
 const RADIUS = SIZE / 2 - 60;
 
+// Showcase-only stand-in for the real Obsidian vault graph — used
+// exclusively when SHOWCASE_MODE is on, never in the real dashboard build.
+const MOCK_GRAPH: GraphData = {
+  nodes: [
+    { path: "vila-de-oyo.md", title: "Vila de Oyó", github: "MarceloReFi/vila-de-oyo" },
+    { path: "hermes-agent.md", title: "Hermes Agent", github: "NousResearch/hermes-agent" },
+    { path: "sacred-sovereignty.md", title: "Sacred Sovereignty", github: null },
+    { path: "ferraria-notas.md", title: "Notas da Ferraria", github: null },
+    { path: "mangue-notas.md", title: "Notas do Mangue", github: null },
+    { path: "refaz-xrpl.md", title: "ReFaz XRPL", github: "MarceloReFi/refaz-xrpl" },
+  ],
+  edges: [
+    { source: "vila-de-oyo.md", target: "sacred-sovereignty.md" },
+    { source: "vila-de-oyo.md", target: "ferraria-notas.md" },
+    { source: "vila-de-oyo.md", target: "mangue-notas.md" },
+    { source: "hermes-agent.md", target: "vila-de-oyo.md" },
+    { source: "refaz-xrpl.md", target: "vila-de-oyo.md" },
+  ],
+};
+
 export function ObsidianGraph() {
   const [data, setData] = useState<GraphData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +64,13 @@ export function ObsidianGraph() {
   const [memoryError, setMemoryError] = useState("");
 
   useEffect(() => {
+    if (SHOWCASE_MODE) {
+      mockDelay(300).then(() => {
+        setData(MOCK_GRAPH);
+        setLoading(false);
+      });
+      return;
+    }
     fetchJSON<GraphData>("/api/vila-oyo/forge/obsidian/graph")
       .then((d) => {
         setData(d);
@@ -75,6 +103,22 @@ export function ObsidianGraph() {
     setMemoryLoading(true);
     setMemoryError("");
     setMemoryCheck(null);
+    if (SHOWCASE_MODE) {
+      await mockDelay(600);
+      setMemoryCheck({
+        notePath: selectedNode.path,
+        noteUpdatedAt: new Date().toISOString(),
+        repo: selectedNode.github,
+        lastCommit: {
+          sha: "a1b2c3d",
+          message: "Ajustes de conteúdo",
+          date: new Date(Date.now() - 86400000 * 3).toISOString(),
+        },
+        newer: "repo",
+      });
+      setMemoryLoading(false);
+      return;
+    }
     try {
       const result = await fetchJSON<MemoryCheckResult>(
         `/api/vila-oyo/forge/obsidian/memory?path=${encodeURIComponent(selectedNode.path)}&repo=${encodeURIComponent(selectedNode.github)}`
